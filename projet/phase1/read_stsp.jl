@@ -127,19 +127,18 @@ function read_edges(header::Dict{String}{String}, filename::String)
         start = 0
         while n_data > 0
           n_on_this_line = min(n_to_read, n_data)
-
           for j = start : start + n_on_this_line - 1
             n_edges = n_edges + 1
             if edge_weight_format in ["UPPER_ROW", "LOWER_COL"]
-              edge = (k+1, i+k+2)
+              edge = (k+1, i+k+2, data[j+1])
             elseif edge_weight_format in ["UPPER_DIAG_ROW", "LOWER_DIAG_COL"]
-              edge = (k+1, i+k+1)
+              edge = (k+1, i+k+1, data[j+1])              
             elseif edge_weight_format in ["UPPER_COL", "LOWER_ROW"]
-              edge = (i+k+2, k+1)
+              edge = (i+k+2, k+1, data[j+1])
             elseif edge_weight_format in ["UPPER_DIAG_COL", "LOWER_DIAG_ROW"]
-              edge = (i+1, k+1)
+              edge = (i+1, k+1, data[j+1])
             elseif edge_weight_format == "FULL_MATRIX"
-              edge = (k+1, i+1)
+              edge = (k+1, i+1, data[j+1])
             else
               warn("Unknown format - function read_edges")
             end
@@ -173,12 +172,14 @@ end
 function read_stsp(filename::String)
   Base.print("Reading of header : ")
   header = read_header(filename)
+  @show header
   println("✓")
   dim = parse(Int, header["DIMENSION"])
   edge_weight_format = header["EDGE_WEIGHT_FORMAT"]
 
   Base.print("Reading of nodes : ")
   graph_nodes = read_nodes(header, filename)
+  @show graph_nodes
   println("✓")
 
   Base.print("Reading of edges : ")
@@ -237,3 +238,64 @@ function plot_graph(filename::String)
   graph_nodes, graph_edges = read_stsp(filename)
   plot_graph(graph_nodes, graph_edges)
 end
+
+
+
+
+
+
+"""Renvoie les noeuds et les arêtes du graphe."""
+function main(filename::String)
+  Base.print("Reading of header : ")
+  header = read_header(filename)
+  #@show header
+  println("✓")
+  dim = parse(Int, header["DIMENSION"])
+  edge_weight_format = header["EDGE_WEIGHT_FORMAT"]
+
+  Base.print("Reading of nodes : ")
+  graph_nodes = read_nodes(header, filename)
+  println("✓")
+
+  Base.print("Reading of edges : ")
+  edges_brut = read_edges(header, filename)
+  println("✓")
+
+  T = valtype(graph_nodes)
+  nodes_vector = Vector{Node{T}}(undef,dim)
+  if isempty(graph_nodes)
+    for i in 1:dim
+      node = Node{T}("$i", T(), i) 
+      nodes_vector[i] = node
+    end 
+  else
+    keys_graph_node = keys(graph_nodes)
+    i=1
+    for key in keys_graph_node
+      node = Node{T}("$i", graph_nodes[key], i) 
+      nodes_vector[i] = node
+      i+=1
+    end 
+  end 
+
+  Base.print("Reading of edges : ")
+  edges_brut = read_edges(header, filename)
+  edges_vector = Vector{Edge{T,typeof(edges_brut[1][3])}}([])
+  for i in edges_brut
+    index1 = i[1] 
+    node1 = Node{T}("$index1", T(), index1)
+    index2 = i[2] 
+    node2 = Node{T}("$index2", T(), index2)
+    weigth = i[3]
+    edge = Edge{T,typeof(weigth)}(node1,node2,weigth)
+    push!(edges_vector, edge)
+  end 
+  name = header.vals[end]
+
+  graph = Graph(name, nodes_vector, edges_vector)
+  return graph
+end 
+#g_node,g_edge = main("instances\\stsp\\swiss42.tsp")
+
+g_bays29 = main("instances\\stsp\\bays29.tsp")
+show_nodes(g_bays29)
