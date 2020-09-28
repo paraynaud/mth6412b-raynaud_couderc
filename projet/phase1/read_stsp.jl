@@ -244,7 +244,7 @@ end
 
 
 
-"""Renvoie les noeuds et les arêtes du graphe."""
+"""Construit un graph à partir des instance de TSP symétrique dont les poids sont données au format EXPLICIT"""
 function main(filename::String)
   Base.print("Reading of header : ")
   header = read_header(filename)
@@ -295,7 +295,3 @@ function main(filename::String)
   graph = Graph(name, nodes_vector, edges_vector)
   return graph
 end 
-#g_node,g_edge = main("instances\\stsp\\swiss42.tsp")
-
-g_bays29 = main("instances\\stsp\\bays29.tsp")
-show_nodes(g_bays29)

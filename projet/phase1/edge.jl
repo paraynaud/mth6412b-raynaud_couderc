@@ -1,4 +1,5 @@
-import Base.show
+import Base.show, Base.==
+using Test
 
 """Type abstrait dont d'autres types d'arêtes dériveront."""
 abstract type AbstractEdge{Y} end
@@ -34,4 +35,8 @@ node2(edge::AbstractEdge) = edge.node2
 
 """Affiche une arête."""
 show(edge::AbstractEdge) = println("Arête de poids ", string(weight(edge)), ": ", name(node1(edge)), " <------> ", name(node2(edge)), )
+
+
+
+
 

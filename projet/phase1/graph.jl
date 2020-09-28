@@ -1,8 +1,6 @@
-import Base.show
+import Base.show, Base.==
+using Test
 
-
-include("node.jl")
-include("edge.jl")
 
 
 """Type abstrait dont d'autres types de graphes dériveront."""
@@ -41,14 +39,14 @@ function add_node!(graph::Graph{T}, node::Node{T}) where T
   graph
 end
 
-"""Ajoute une arête au graphe."""
+"""Ajoute une arête au graphe. edges(graph) renvoie le Dict d'arêtes de graph"""
 function add_edge!(graph::Graph{T}, edge::Edge{T,Y}) where T where Y
   edges(graph)[(node1(edge), node2(edge))] = edge
   graph
 end
 
 # on présume que tous les graphes dérivant d'AbstractGraph
-# posséderont des champs `name` et `nodes`.
+# posséderont des champs `name` et `nodes` et `edges`.
 
 """Renvoie le nom du graphe."""
 name(graph::AbstractGraph) = graph.name
@@ -79,6 +77,8 @@ function show(graph::Graph)
   end
 end
 
+
+"""Affiche uniquement les noeuds d'un graphe. Si il y a trop d'arêtes la méthode show ne permet pas de voir les noeuds.""" 
 function show_nodes(graph::Graph)
   println("Graph ", name(graph), " has ", nb_nodes(graph), " nodes and ", nb_edges(graph), " edges.")
   println("Nodes:")
@@ -87,16 +87,10 @@ function show_nodes(graph::Graph)
   end
 end
 
+""" définition de l'égalité entre graph""" 
+(==)(graph1::Graph, graph2::Graph) = (nodes(graph1) == nodes(graph2)) && (edges(graph1) == edges(graph2)) && (name(graph1) == name(graph2))
 
-_node1 = Node("Joe", 3.14,1)
-_node2 = Node("Steve", exp(1),2)
-_node3 = Node("Jill", 4.12,3)
-_edge1 = Edge(_node1, _node2, 4)
-_edge2 = Edge(_node2, _node3, 3)
-vector_node = [_node1, _node2, _node3]
-vector_edge = [_edge1, _edge2]
-graph = Graph("Ick", vector_node, vector_edge)
 
-_edge3 = Edge(_node1, _node3, 5)
-add_edge!(graph,_edge3)
-#show(graph)
+
+
+
