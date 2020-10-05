@@ -18,13 +18,14 @@ abstract type AbstractConnectedComponent{T} <: AbstractGraph{T} end
 @inline edges(connected_component::AbstractConnectedComponent) = edges(connected_component.sub_graph)
 
 """Renvoie le nombre d'arêtes du graphe."""
-@inline nb_edges(connected_component::AbstractConnectedComponent) = sub_graph(connected_component.sub_graph)
+@inline nb_edges(connected_component::AbstractConnectedComponent) = length(edges(sub_graph))
 
-""" définition de l'égalité entre graph""" 
+"""Définition de l'égalité entre graph""" 
 @inline (==)(connected_component1::AbstractConnectedComponent, connected_component2::AbstractConnectedComponent) = (nodes(connected_component1) == nodes(connected_component2)) && (edges(connected_component1) == edges(connected_component2)) && (name(connected_component1) == name(connected_component2)) && (root(connected_component1) == root(connected_component2))
 
+"""Vérifie l'existence de node dans connected_component"""
 nodein(connected_component::AbstractConnectedComponent, node:: Node{T}) where T = nodein(connected_component.sub_graph, node)
-nodeat(connected_component::AbstractConnectedComponent, node:: Node{T}) where T = nodeat(connected_component.sub_graph, node)
+
 
 mutable struct ConnectedComponent{T} <: AbstractConnectedComponent{T}
     sub_graph :: Graph{T}
@@ -34,7 +35,11 @@ end
 
 """Renvoie la racine d'une composante connexe."""
 @inline root(c_c :: ConnectedComponent) = c_c.root
+
+"""Renvoie le graph d'une composante connexe."""
 @inline sub_graph(c_c :: ConnectedComponent) = c_c.sub_graph
+
+"""Renvoie l'indice d'une composante connexe."""
 @inline index(c_c :: ConnectedComponent) = c_c.index
 
 """
@@ -48,40 +53,23 @@ ConnectedComponent(root::Node{T};
                    index::Int=_index_cc) where T  = begin global _index_cc +=1; ConnectedComponent( sub_graph, root, index) end 
 #on créé une composante connexe en générant un graph directement à partir de la racine
 
+""" set_sub_graph!(connected_component, graph), setter du champ sub_graph de connected_component """
 set_sub_graph!(cc :: ConnectedComponent{T}, g :: Graph{T}) where T = cc.sub_graph = g
 
-function check_edge(edge::Edge{T}, nodes1::Vector{Node{T}}, nodes2::Vector{Node{T}}) where T
-    _node1 = node1(edge)
-    _node2 = node2(edge)
-    exist_n1_l1 = (findfirst(x-> x==_node1, nodes1) != nothing)
-    exist_n1_l2 = (findfirst(x-> x==_node1, nodes2) != nothing)
-    exist_n2_l1 = (findfirst(x-> x==_node2, nodes1) != nothing)
-    exist_n2_l2 = (findfirst(x-> x==_node2, nodes2) != nothing)
 
-    if ((exist_n1_l1 && exist_n2_l2) || (exist_n1_l2 && exist_n2_l1)) 
-        return true
-    else
-        error("les deux sommets de l'arête n'appartient pas à une composante connexe distincte")
-    end 
-end 
-
-#todo opération merge de composante connexes (cc1,cc2,edge1), celles de graph également.
+"""
+    merge!(vector_connected_component, edge) merge deux composantes connexes à partir de l'arête edge.
+    Un sommet n'est présent que dans une seule composante connexe, on peut donc retrouver les sommets à partir de l'arête.
+"""
 function merge!(vector_cc :: Vector{ConnectedComponent{T}}, edge :: Edge{T}) where T
     _node1 = node1(edge)
     _node2 = node2(edge)
-
-    show(edge)
-    show(_node1)
-    show(_node2)
-    # show.(vector_cc)
 
     index_cc1 = findfirst( cc -> nodein(cc, _node1), vector_cc)
     cc1 = vector_cc[index_cc1]
     index_cc2 = findfirst( cc -> cc != cc1 && nodein(cc, _node2), vector_cc)
     cc2 = vector_cc[index_cc2]
 
-
-    # check_edge(edge, nodes(cc1), nodes(cc2))
     new_sub_graph = merge(sub_graph(cc1), sub_graph(cc2))
     add_edge!(new_sub_graph, edge)
     set_sub_graph!(cc1, new_sub_graph)
@@ -90,6 +78,7 @@ function merge!(vector_cc :: Vector{ConnectedComponent{T}}, edge :: Edge{T}) whe
     return cc1
 end 
 
+""" Affiche la composante connexe cc""" 
 function show(cc :: ConnectedComponent)
     println("la racine est :", root(cc))
     show(sub_graph(cc))    

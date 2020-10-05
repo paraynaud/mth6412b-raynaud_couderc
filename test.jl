@@ -3,39 +3,38 @@ code_path="projet/phase1/"
 include(code_path*"ordered_include.jl")
 
     @testset "test edge" begin
-    noeud1 = Node("James"; data=[π, exp(1)], index=1)
-    noeud2 = Node("Kirk"; data=[7.0,1.0], index=2)
-    noeud2 = Node("Spoke"; data=[3.0,0.0], index=3)
-    arête = Edge(noeud1, noeud2; weight=2) 
-    arête2 = Edge(noeud1, noeud2; weight=5)   
-    @test weight(arête) == 2
-    @test node1(arête) == noeud1
-    @test node2(arête) == noeud2
-    @test arête != arête2
-    end
+        noeud1 = Node("James"; data=[π, exp(1)], index=1)
+        noeud2 = Node("Kirk"; data=[7.0,1.0], index=2)
+        noeud2 = Node("Spoke"; data=[3.0,0.0], index=3)
+        arête = Edge(noeud1, noeud2; weight=2) 
+        arête2 = Edge(noeud1, noeud2; weight=5)   
+        @test weight(arête) == 2
+        @test node1(arête) == noeud1
+        @test node2(arête) == noeud2
+        @test arête != arête2
+        end
 
-    @testset "test de la création d'un graph" begin
-    _node1 = Node("Joe"; data=3.14, index=1)
-    _node2 = Node("Steve"; data=exp(1), index=2)
-    _node3 = Node("Jill"; data=4.12, index=3)
-    _edge1 = Edge(_node1, _node2; weight=4)
-    _edge2 = Edge(_node2, _node3; weight=3)
-    vector_node = [_node1, _node2, _node3]
-    vector_edge = [_edge1, _edge2]
+        @testset "test de la création d'un graph" begin
+        _node1 = Node("Joe"; data=3.14, index=1)
+        _node2 = Node("Steve"; data=exp(1), index=2)
+        _node3 = Node("Jill"; data=4.12, index=3)
+        _edge1 = Edge(_node1, _node2; weight=4)
+        _edge2 = Edge(_node2, _node3; weight=3)
+        vector_node = [_node1, _node2, _node3]
+        vector_edge = [_edge1, _edge2]
 
-    graph = Graph("Ick", vector_node, vector_edge)
-    @test graph == Graph("Ick", vector_node, vector_edge)
-    
-    @test nodes(graph) == vector_node
-    _edge3 = Edge(_node1, _node3; weight=5)
-    push!(vector_edge, _edge3)
-    add_edge!(graph,_edge3)
-    graph2 = Graph("Ick", vector_node, vector_edge)
-    @test edges(graph) == edges(graph2)
-    @test nodes(graph) == nodes(graph2)
-    @test name(graph) == name(graph2)
-    @test graph == graph2
-
+        graph = Graph("Ick", vector_node, vector_edge)
+        @test graph == Graph("Ick", vector_node, vector_edge)
+        
+        @test nodes(graph) == vector_node
+        _edge3 = Edge(_node1, _node3; weight=5)
+        push!(vector_edge, _edge3)
+        add_edge!(graph,_edge3)
+        graph2 = Graph("Ick", vector_node, vector_edge)
+        @test edges(graph) == edges(graph2)
+        @test nodes(graph) == nodes(graph2)
+        @test name(graph) == name(graph2)
+        @test graph == graph2
 
     end
 
@@ -73,7 +72,7 @@ include(code_path*"ordered_include.jl")
         @test graph12 == merged_graph
     end 
 
-    # @testset "test composantes connexes" begin
+    @testset "test composantes connexes" begin
         _node1 = Node("Joe"; data=3.14, index=1)
         _node2 = Node("Steve"; data=exp(1), index=2)
         _node3 = Node("Jill"; data=4.12, index=3)
@@ -89,36 +88,43 @@ include(code_path*"ordered_include.jl")
         cc2 = ConnectedComponent(_node2)
         cc3 = ConnectedComponent(_node3)
 
-        #produit une erreur
-        # try 
-        #     merge!(cc1,cc2, _edge2) 
-        # catch e
-        #     @test e == ErrorException("les deux sommets de l'arête n'appartient pas à une composante connexe distincte")
-        # end 
-
-        merge!(cc1,cc2, _edge1)
-        merge!(cc1,cc3, _edge2)
+        merge!([cc1,cc2], _edge1)
+        merge!([cc1,cc3], _edge2)
         @test cc1 == graph
 
-        #kruskal(graph)
-    # end
+        @test root(cc1) == _node1
+        @test name(cc1) == "connected_component"
+    end
 
 
-    # @testset "test du main" begin
-        
-
+    @testset "test du main" begin
         couvrant_bays29 = main("instances/stsp/bays29.tsp")
-        show(couvrant_bays29)
+        @test total_weigth_edges(couvrant_bays29) == 1557
+        # show(couvrant_bays29)
 
         couvrant_swiss42 = main("instances/stsp/swiss42.tsp")
-        show(couvrant_swiss42)
-
+        @test total_weigth_edges(couvrant_swiss42) == 1079
+        # show(couvrant_swiss42)
 
         couvrant_gr24 = main("instances/stsp/gr24.tsp")
-        show(couvrant_gr24)
-        
+        @test total_weigth_edges(couvrant_gr24) == 1011
+        # show(couvrant_gr24)        
         
         couvrant_dantzig42 = main("instances/stsp/dantzig42.tsp")
-        show(couvrant_dantzig42)
-    # end
+        @test total_weigth_edges(couvrant_dantzig42) == 591
+        # show(couvrant_dantzig42)
+
+        #gros exemple, prends un peu de temps
+        # couvrant_pa561 = main("instances/#stsp/pa561.tsp")
+        
+
+        # println("le poids total de bays29 est:", total_weigth_edges(couvrant_bays29) )
+        # println("le poids total de swiss42 est:", total_weigth_edges(couvrant_swiss42) )
+        # println("le poids total de gr24 est:", total_weigth_edges(couvrant_gr24) )
+        # println("le poids total de dantzig42 est:", total_weigth_edges(couvrant_dantzig42) )
+
+
+
+        
+    end
 

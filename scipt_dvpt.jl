@@ -1,3 +1,5 @@
+using BenchmarkTools
+
 code_path="projet/phase1/"
 
 include(code_path*"ordered_include.jl")
@@ -20,6 +22,8 @@ include(code_path*"ordered_include.jl")
 
 
 
-graph = main("instances/stsp/bayg29.tsp")
-arbre_couvrant = kruskal(graph)
+arbre_couvrant = main("instances/stsp/course_note.tsp")
 
+total_weigth_edges(arbre_couvrant)
+
+@benchmark (main("instances/stsp/pa561.tsp"))

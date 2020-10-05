@@ -26,8 +26,8 @@ abstract type AbstractGraph{T} end
 """ définition de l'égalité entre graph""" 
 @inline (==)(graph1::AbstractGraph, graph2::AbstractGraph) = (nodes(graph1) == nodes(graph2)) && (edges(graph1) == edges(graph2)) && (name(graph1) == name(graph2))
 
-
-
+""" Renvoie le poids total des arêtes d'un graphe. Utilisé principalement pour recupérer les coût d'un arbre couvrant."""
+total_weigth_edges(graph::AbstractGraph) = mapreduce( pair -> weight(pair[2]),+,collect(edges(graph)))
 
 
 
@@ -73,8 +73,8 @@ function add_edge!(graph::Graph{T}, edge::Edge{T}) where T
   graph
 end
 
+""" Vérifie la présence de node dans l'ensemble des sommets de graph"""
 nodein(graph::Graph{T}, node::Node{T}) where T = findfirst( n -> n==node, nodes(graph)) != nothing
-nodeat(graph::Graph{T}, node::Node{T}) where T = findfirst( n -> n==node, nodes(graph))
 
 
 """Affiche un graphe"""
@@ -109,11 +109,14 @@ function merge(graph1::Graph{T}, graph2::Graph{T}) where T
   return merged_graph
 end 
 
-
+#Définition des composantes connexes
 include("connected_component.jl")
 
 
-
+""" 
+  delete_edges!(edge_vector, connected_component)
+Supprime les arêtes de edge_vector tel que les 2 sommets appartiennent à la composante connexe: connected component. 
+"""
 function delete_edges!(vector_edge :: Vector{Edge{T}}, cc:: ConnectedComponent{T}) where T
   future_index = Int[]
   for (i, edge) in enumerate(vector_edge)
@@ -126,6 +129,8 @@ function delete_edges!(vector_edge :: Vector{Edge{T}}, cc:: ConnectedComponent{T
   deleteat!(vector_edge, future_index) 
 end 
 
+
+""" Supprime les arêtes d'un noeud pointant vers lui-même. Appliqué"""
 function pre_treatement_edges!(vector_edges::Vector{Edge{T}}) where T 
   delete_index = Int[]
   for (i,edge) in enumerate(vector_edges)
@@ -136,6 +141,11 @@ function pre_treatement_edges!(vector_edges::Vector{Edge{T}}) where T
   deleteat!(vector_edges, delete_index)
 end 
 
+
+"""
+  kruskal(graph)
+Implémentation de l'algorithme de kruskal, trouvant pour un graph g son arbre couvrant de poids minimum.
+"""
 function kruskal(g :: Graph{T}) where T
   _nodes = nodes(g)
   _edges = edges(g)
@@ -143,21 +153,15 @@ function kruskal(g :: Graph{T}) where T
   vector_edges = Vector{Edge{T}}( map( edge -> edge[2], collect(_edges ) ))
   sort!(vector_edges)
   pre_treatement_edges!(vector_edges)
-
-  
+  #création d'une composante connexe par sommet
   cc_vector = map( node -> ConnectedComponent(node), _nodes)
-  # show.(cc_vector)
-  # for (i,edge) in enumerate(_edges)
-  #   show(edge)
-  # end 
-
 
   while isempty(vector_edges) == false    
-    edge = vector_edges[1]
-    cc = merge!(cc_vector, edge)
-    delete_edges!(vector_edges, cc)  
+    edge = vector_edges[1] #arête de coût minimum
+    cc = merge!(cc_vector, edge) #fusion des 2 composantes connexes que l'arête relie
+    delete_edges!(vector_edges, cc)  # suppression des arêtes faisant parties de la composante connexe cc
   end
   
-  length(cc_vector) != 1 && @error("nombre de composante connexe différent de 1")
-  return cc_vector[1]
+  length(cc_vector) != 1 && @error("nombre de composante connexe différent de 1") # vérification du nombre de composante connexe
+  return cc_vector[1] # Renvoie la dernière composante connexe, qui peut-être traitée comme un Graph
 end 

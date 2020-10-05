@@ -23,9 +23,10 @@ abstract type AbstractEdge{T} end
 """Affiche une arête."""
 @inline show(edge::AbstractEdge) = println("Arête de poids ", string(weight(edge)), ": ", name(node1(edge)), " <------> ", name(node2(edge)), )
 
-
+"""surchage de l'opérateur == dépendant uniquement du poids d'une arête"""
 @inline (==)(edge1 :: AbstractEdge, edge2 :: AbstractEdge) = weight(edge1) == weight(edge2)
 
+"""surchage de la fonction isless"""
 @inline isless(edge1 :: AbstractEdge, edge2 :: AbstractEdge) = weight(edge1) <= weight(edge2)
 
 """Type représentant les arêtes d'un graphe.

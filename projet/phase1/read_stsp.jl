@@ -261,6 +261,8 @@ function main(filename::String)
   edges_brut = read_edges(header, filename)
   println("✓")
 
+
+  Base.print("Transcripting of nodes : ")
   T = valtype(graph_nodes)
   nodes_vector = Vector{Node{T}}(undef,dim)
 
@@ -268,32 +270,38 @@ function main(filename::String)
     map!( i -> Node("$i", data=T(), index=i), nodes_vector, [1:dim;]) # création de dim sommets par défaut, pour remplacer l'absence de données 
   else #les données des noeuds sont spécifiées
     keys_graph_node = keys(graph_nodes)
-    i=1
     for key in keys_graph_node
-      @show key, graph_nodes[key]
-      node = Node("$i"; data=graph_nodes[key], index=i) 
-      nodes_vector[i] = node
-      i+=1
+      node = Node("$key"; data=graph_nodes[key], index=key) 
+      nodes_vector[key] = node
     end 
   end 
+  println("✓")
 
-  Base.print("Reading of edges : ")
+
+  Base.print("Transcripting of edges : ")
   edges_brut = read_edges(header, filename)
   edges_vector = Vector{Edge{T}}([])
-  for data_edge in edges_brut
-    index1 = data_edge[1]
-    index2 = data_edge[2]
+  for data_edge ::Tuple{Int,Int,String} in edges_brut
+    index1 = data_edge[1] :: Int
+    index2 = data_edge[2] :: Int
     weight = parse(Float64,data_edge[3])
-    node1 = Node("$index1"; data=T(), index=index1)
-    node2 = Node("$index2"; data=T(), index=index2)
+    if isempty(graph_nodes)
+      node1 = Node("$index1"; data=T(), index=index1) :: Node{T}
+      node2 = Node("$index2"; data=T(), index=index2) :: Node{T}
+    else
+      node1 = Node("$index1"; data=graph_nodes[index1], index=index1) :: Node{T}
+      node2 = Node("$index2"; data=graph_nodes[index2], index=index2) :: Node{T}
+    end
     edge = Edge(node1,node2; weight=weight)
     push!(edges_vector, edge)
   end 
+  println("✓")
+
   name = header.vals[end]
 
   graph = Graph(name, nodes_vector, edges_vector)
   arbre_couvrant = kruskal(graph)
-
+  
   return arbre_couvrant
 end 
 
