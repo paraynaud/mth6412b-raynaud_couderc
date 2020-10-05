@@ -1,10 +1,13 @@
-import Base.show
+import Base.show, Base.==
 using Test
 
 
 """Type abstrait dont d'autres types de noeuds dériveront."""
 abstract type AbstractNode{T} end
 
+
+
+(==)(node1 :: AbstractNode, node2 :: AbstractNode) = (name(node1) == (name(node2) )  &&  (data(node1)==data(node2)) && (index(node1) == index(node2)) )
 """Type représentant les noeuds d'un graphe.
 
 Exemple:
@@ -21,20 +24,23 @@ mutable struct Node{T} <: AbstractNode{T}
 end
 
 
-node_test = Node("f",4,3)
+global _index_node = 1
+Node(name::String; data::T=-1, index::Int=_index_node) where T  = begin global _index_node +=1; Node(name, data :: T, index) end 
+
+
 
 # on présume que tous les noeuds dérivant d'AbstractNode
 # posséderont des champs `name` et `data`.
 
 """Renvoie le nom du noeud."""
-name(node::AbstractNode) = node.name
+@inline name(node::AbstractNode) = node.name
 
 """Renvoie les données contenues dans le noeud."""
-data(node::AbstractNode) = node.data
+@inline data(node::AbstractNode) = node.data
+
+"""Renvoie les données contenues dans le noeud."""
+@inline index(node::AbstractNode) = node.index
 
 """Affiche un noeud."""
-function show(node::AbstractNode)
-  println("Node ", name(node), ", data: ", data(node))
-end
-
+show(node::AbstractNode) = println("Node ", name(node), ", data: ", data(node), " d'indice ", index(node))
 

@@ -263,16 +263,15 @@ function main(filename::String)
 
   T = valtype(graph_nodes)
   nodes_vector = Vector{Node{T}}(undef,dim)
-  if isempty(graph_nodes)
-    for i in 1:dim
-      node = Node{T}("$i", T(), i) 
-      nodes_vector[i] = node
-    end 
-  else
+
+  if isempty(graph_nodes) #les données des noeuds ne sont pas spécifiées
+    map!( i -> Node("$i", data=T(), index=i), nodes_vector, [1:dim;]) # création de dim sommets par défaut, pour remplacer l'absence de données 
+  else #les données des noeuds sont spécifiées
     keys_graph_node = keys(graph_nodes)
     i=1
     for key in keys_graph_node
-      node = Node{T}("$i", graph_nodes[key], i) 
+      @show key, graph_nodes[key]
+      node = Node("$i"; data=graph_nodes[key], index=i) 
       nodes_vector[i] = node
       i+=1
     end 
@@ -280,18 +279,22 @@ function main(filename::String)
 
   Base.print("Reading of edges : ")
   edges_brut = read_edges(header, filename)
-  edges_vector = Vector{Edge{T,typeof(edges_brut[1][3])}}([])
-  for i in edges_brut
-    index1 = i[1] 
-    node1 = Node{T}("$index1", T(), index1)
-    index2 = i[2] 
-    node2 = Node{T}("$index2", T(), index2)
-    weigth = i[3]
-    edge = Edge{T,typeof(weigth)}(node1,node2,weigth)
+  edges_vector = Vector{Edge{T}}([])
+  for data_edge in edges_brut
+    index1 = data_edge[1]
+    index2 = data_edge[2]
+    weight = parse(Float64,data_edge[3])
+    node1 = Node("$index1"; data=T(), index=index1)
+    node2 = Node("$index2"; data=T(), index=index2)
+    edge = Edge(node1,node2; weight=weight)
     push!(edges_vector, edge)
   end 
   name = header.vals[end]
 
   graph = Graph(name, nodes_vector, edges_vector)
-  return graph
+  arbre_couvrant = kruskal(graph)
+
+  return arbre_couvrant
 end 
+
+
