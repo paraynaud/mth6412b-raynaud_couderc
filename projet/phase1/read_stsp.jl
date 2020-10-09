@@ -300,7 +300,7 @@ function main(filename::String)
   name = header.vals[end]
 
   graph = Graph(name, nodes_vector, edges_vector)
-  arbre_couvrant = kruskal(graph)
+  arbre_couvrant = kruskal2(graph)
   
   return arbre_couvrant
 end 

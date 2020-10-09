@@ -94,10 +94,16 @@ include(code_path*"ordered_include.jl")
 
         @test root(cc1) == _node1
         @test name(cc1) == "connected_component"
+
+        cc4 = ConnectedComponent2(0.0)
     end
 
 
     @testset "test du main" begin
+        couvrant_course = main("instances/stsp/course_note.tsp")
+        @test total_weigth_edges(couvrant_course) == 37
+
+
         couvrant_bays29 = main("instances/stsp/bays29.tsp")
         @test total_weigth_edges(couvrant_bays29) == 1557
         # show(couvrant_bays29)
@@ -115,8 +121,9 @@ include(code_path*"ordered_include.jl")
         # show(couvrant_dantzig42)
 
         #gros exemple, prends un peu de temps
-        # couvrant_pa561 = main("instances/#stsp/pa561.tsp")
-        
+        couvrant_pa561 = main("instances/stsp/pa561.tsp")
+        @test total_weigth_edges(couvrant_pa561) == 2396
+
 
         # println("le poids total de bays29 est:", total_weigth_edges(couvrant_bays29) )
         # println("le poids total de swiss42 est:", total_weigth_edges(couvrant_swiss42) )

@@ -41,6 +41,9 @@ Node(name::String; data::T=-1, index::Int=_index_node) where T  = begin global _
 """Renvoie les données contenues dans le noeud."""
 @inline index(node::AbstractNode) = node.index
 
+""" set_index!(node, i), setter du champ index de Node """
+set_index!(node :: Node{T}, i :: Int) where T = node.index = i
+
 """Affiche un noeud."""
 show(node::AbstractNode) = println("Node ", name(node), ", data: ", data(node), " d'indice ", index(node))
 

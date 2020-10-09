@@ -165,3 +165,36 @@ function kruskal(g :: Graph{T}) where T
   length(cc_vector) != 1 && @error("nombre de composante connexe différent de 1") # vérification du nombre de composante connexe
   return cc_vector[1] # Renvoie la dernière composante connexe, qui peut-être traitée comme un Graph
 end 
+
+function kruskal2(g :: Graph{T}) where T
+  _nodes = nodes(g)
+  _edges = edges(g)
+  @show length(_edges)
+  vector_edges = Vector{Edge{T}}( map( edge -> edge[2], collect(_edges ) ))
+  sort!(vector_edges)
+
+  cc_vector = ConnectedComponent2{T}[]
+  for (i, node) in enumerate(_nodes)
+    set_index!(node, i)
+    push!(cc_vector, ConnectedComponent2([0.0], index = i))
+  end
+
+  edges_res = Edge{T}[]
+
+  for edge in vector_edges    
+    index_cc1 = index(node1(edge))
+    index_cc2 = index(node2(edge))
+
+    cc1 = cc_vector[index_cc1]
+    cc2 = cc_vector[index_cc2]
+    
+    if (find!(cc1) != find!(cc2)) 
+      push!(edges_res, edge)
+      union(cc1, cc2)
+    end
+
+  end
+
+  graph = Graph("Arbre couvrant", _nodes, edges_res)
+  return graph
+end 
