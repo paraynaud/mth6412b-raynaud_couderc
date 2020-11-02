@@ -389,8 +389,8 @@ end
 puis applique l'algorithme de prim de manière à obtenir un arbre couvrant"""
 function main_prim(filename::String)
 
-  graph_list = create_graph_list_from_file(filename)
-  arbre_couvrant = prim(graph_list)
+  graph_list = create_graph_list_from_file(filename) #Créé un graphe de liste d'adjacence à partir de filename
+  arbre_couvrant = prim(graph_list) #applique Prim à ce même graphe pour trouver un arbre couvrant
   
   return arbre_couvrant
 end 

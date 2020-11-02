@@ -53,7 +53,15 @@ set_index!(node :: Node{T}, i :: Int) where T = node.index = i
 """Affiche un noeud."""
 show(node::AbstractNode) = println("Node ", name(node), ", data: ", data(node), " d'indice ", index(node))
 
+"""Type représentant les noeuds d'un graphe.
 
+Exemple:
+
+        noeud = MarkedNode([π, exp(1)], name="James")
+        noeud = MarkedNode("guitar", name="James")
+        noeud = MarkedNode(2, name="Lars")
+
+"""
 mutable struct MarkedNode{T} <: AbstractNode{T}
   name::String
   data::T
@@ -62,18 +70,23 @@ mutable struct MarkedNode{T} <: AbstractNode{T}
   parent::Union{MarkedNode{T},Nothing}
   index:: Int
 end
-  
+
+""" Utilisation d'une variable globale lors de la création du graphe pour nous simplifier la distinction entre 2 noeud étant initialisé sans donnée"""
 global _index_marked_node = 1
 
+""" Cette fonction reset la variable globale, nécessaire si l'on souhaite définir plusieurs graphes de liste dans un même éxecution"""
+function reset_index_marked_node()
+  global _index_marked_node = 1
+end 
+
+"""Constructeur de MarkedNode """
 function MarkedNode(data::T; name::String="", distance::Float64=Inf, _index::Int=_index_marked_node) where T
   global _index_marked_node +=1
   MarkedNode(name, data, false, max(0.0, distance), nothing, _index)
 end
 
-function reset_index_marked_node()
-  global _index_marked_node = 1
-end 
-  
+
+"""Getter/Setter"""
 function set_visited!(node::MarkedNode)
   node.visited = true
   node
@@ -90,3 +103,5 @@ function set_parent!(node::MarkedNode{T}, p::MarkedNode{T}) where T
   node.parent = p
   node
 end
+
+parent(node:: MarkedNode) = node.parent

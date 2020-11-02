@@ -116,6 +116,76 @@ include(code_path*"ordered_include.jl")
     end
 
 
+    @testset "test markednode" begin
+        couple1 = Couple(3,2)
+        couple2 = Couple(3,6)
+        couple3 = Couple(4,7)
+        couple4 = Couple(4,10)
+        
+        mn1 = MarkedNode(couple1)
+        mn2 = MarkedNode(couple2, name="Ok.")
+        mn3 = MarkedNode(couple3, name="Bien vu!")
+        mn4 = MarkedNode(couple4, name="Wow!")
+
+        set_visited!(mn1)
+        set_visited!(mn4)
+        set_distance!(mn2, 5.0)
+        set_distance!(mn3, 6.0)
+        set_parent!(mn2, mn1)
+        set_parent!(mn4, mn3)
+
+        array_mn = [mn1, mn2, mn3, mn4]
+        @test is_visited.(array_mn) == [true,false,false,true]
+        @test distance.(array_mn) == [Inf,5.0,6.0,Inf]
+        @test parent.(array_mn) == [nothing,mn1,nothing,mn3]
+        @test name.(array_mn) == ["","Ok.","Bien vu!","Wow!"]
+        
+    end
+
+
+    @testset "test PriorityItem" begin
+        couple1 = Couple(3,2)
+        couple2 = Couple(3,6)
+
+        @test fst(couple1) == 3
+        @test fst(couple1) == fst(couple2)
+        @test snd(couple1) == 2
+        @test snd(couple2) == 6
+
+        p1 = PriorityItem(1.0, couple1 )
+        p2 = PriorityItem(2.0, couple2 )
+
+        @test p1 != p2
+        @test p1 == p1
+        @test priority(p1) == 1.0
+        @test data(p1) == couple1
+        @test min(p1,p2) == p1
+    end
+
+
+    @testset " test sur les files de priorité" begin
+        couple1 = Couple(3,2)
+        couple2 = Couple(3,6)
+        couple3 = Couple(4,7)
+        couple4 = Couple(4,10)
+
+        p1 = PriorityItem(1.0, couple1 )
+        p2 = PriorityItem(2.0, couple2 )
+        p3 = PriorityItem(8.0, couple3 )
+        p4 = PriorityItem(5.0, couple4 )
+
+        queue = Queue([p1,p2,p3])
+        
+        @test min_weight(queue) == p1
+        @test length(queue) == 3
+
+        push!(queue, p4)
+        @show queue
+        @test queue.items == [p1,p2,p3,p4]
+
+    end 
+
+
     @testset "test des algos arbres couvrants" begin
 
         function total_weight(arbre_couvrant)
