@@ -23,14 +23,14 @@ include(code_path*"ordered_include.jl")
         vector_node = [_node1, _node2, _node3]
         vector_edge = [_edge1, _edge2]
 
-        graph = Graph("Ick", vector_node, vector_edge)
-        @test graph == Graph("Ick", vector_node, vector_edge)
+        graph = GraphDic("Ick", vector_node, vector_edge)
+        @test graph == GraphDic("Ick", vector_node, vector_edge)
         
         @test nodes(graph) == vector_node
         _edge3 = Edge(_node1, _node3; weight=5)
         push!(vector_edge, _edge3)
         add_edge!(graph,_edge3)
-        graph2 = Graph("Ick", vector_node, vector_edge)
+        graph2 = GraphDic("Ick", vector_node, vector_edge)
         @test edges(graph) == edges(graph2)
         @test nodes(graph) == nodes(graph2)
         @test name(graph) == name(graph2)
@@ -48,7 +48,7 @@ include(code_path*"ordered_include.jl")
         vector_node = [_node1, _node2, _node3]
         vector_edge = [_edge1, _edge2]
 
-        graph1 = Graph("Ick", vector_node, vector_edge)
+        graph1 = GraphDic("Ick", vector_node, vector_edge)
 
         graph = merge(graph1, graph1)
         @test graph == graph1
@@ -61,12 +61,12 @@ include(code_path*"ordered_include.jl")
         vector_node2 = [_node4, _node5, _node6]
         vector_edge2 = [_edge3, _edge4]
 
-        graph2 = Graph("Ick2", vector_node2, vector_edge2)
+        graph2 = GraphDic("Ick2", vector_node2, vector_edge2)
 
 
         merge_nodes = unique(vcat(vector_node,vector_node2))
         merge_edges = vcat(vector_edge,vector_edge2)
-        graph12 = Graph(name(graph1), merge_nodes, merge_edges)
+        graph12 = GraphDic(name(graph1), merge_nodes, merge_edges)
         
         merged_graph = merge(graph1, graph2)
         @test graph12 == merged_graph
@@ -81,7 +81,7 @@ include(code_path*"ordered_include.jl")
 
         vector_node = [_node1, _node2, _node3]
         vector_edge = [_edge1, _edge2]
-        graph = Graph("connected_component", vector_node, vector_edge)
+        graph = GraphDic("connected_component", vector_node, vector_edge)
 
 
         cc1 = ConnectedComponent(_node1)
@@ -96,42 +96,71 @@ include(code_path*"ordered_include.jl")
         @test name(cc1) == "connected_component"
 
         cc4 = ConnectedComponent2(0.0)
+        cc5 = ConnectedComponent2(1.0)
+        cc6 = ConnectedComponent2(2.0)
+        
+        @test cc4 != cc5
+
+        union!(cc4,cc5) 
+        union!(cc6,cc5) 
+        @test union!(cc6,cc5) == cc4
+        @test union!(cc6,cc5) == cc4
+
+        @test size(cc4) == 1
+        @test size(cc5) == 0
+        @test size(cc6) == 0
+
+        @test find!(cc5) == find!(cc5)
+        @test find!(cc5) == cc4
+
     end
 
 
-    @testset "test du main" begin
-        couvrant_course = main("instances/stsp/course_note.tsp")
-        @test total_weigth_edges(couvrant_course) == 37
+    @testset "test des algos arbres couvrants" begin
 
-
-        couvrant_bays29 = main("instances/stsp/bays29.tsp")
-        @test total_weigth_edges(couvrant_bays29) == 1557
-        # show(couvrant_bays29)
-
-        couvrant_swiss42 = main("instances/stsp/swiss42.tsp")
-        @test total_weigth_edges(couvrant_swiss42) == 1079
-        # show(couvrant_swiss42)
-
-        couvrant_gr24 = main("instances/stsp/gr24.tsp")
-        @test total_weigth_edges(couvrant_gr24) == 1011
-        # show(couvrant_gr24)        
+        function total_weight(arbre_couvrant)
+            sum = 0
+            for i in arbre_couvrant
+                sum = sum + distance(i)
+            end 
+            return sum
+        end 
         
-        couvrant_dantzig42 = main("instances/stsp/dantzig42.tsp")
-        @test total_weigth_edges(couvrant_dantzig42) == 591
-        # show(couvrant_dantzig42)
+        course_note = "instances/stsp/course_note.tsp"
+        couvrant_course_kruskal = main_kruskal2(course_note)
+        couvrant_course_prim = main_prim(course_note)
+        @test total_weigth_edges(couvrant_course_kruskal) == 37
+        @test total_weight(couvrant_course_prim) == 37
 
-        #gros exemple, prends un peu de temps
-        couvrant_pa561 = main("instances/stsp/pa561.tsp")
-        @test total_weigth_edges(couvrant_pa561) == 2396
+        bays29 = "instances/stsp/bays29.tsp"
+        couvrant_bays29_kruskal = main_kruskal2(bays29)
+        couvrant_bays29_prim = main_prim(bays29)
+        @test total_weigth_edges(couvrant_bays29_kruskal) == 1557
+        @test total_weight(couvrant_bays29_prim) == 1557
+       
+        swiss42 = "instances/stsp/swiss42.tsp"
+        couvrant_swiss42_kruskal = main_kruskal2(swiss42)
+        couvrant_swiss42_prim = main_prim(swiss42)
+        @test total_weigth_edges(couvrant_swiss42_kruskal) == 1079
+        @test total_weight(couvrant_swiss42_prim) == 1079
 
+        gr24 = "instances/stsp/gr24.tsp"
+        couvrant_gr24_kruskal = main_kruskal2(gr24)
+        couvrant_gr24_prim = main_prim(gr24)
+        @test total_weigth_edges(couvrant_gr24_kruskal) == 1011
+        @test total_weight(couvrant_gr24_prim) == 1011
+                
+        dantzig42 = "instances/stsp/dantzig42.tsp"
+        couvrant_dantzig42_kruskal = main_kruskal2(dantzig42)
+        couvrant_dantzig42_prim = main_prim(dantzig42)
+        @test total_weigth_edges(couvrant_dantzig42_kruskal) == 591
+        @test total_weight(couvrant_dantzig42_prim) == 591
 
-        # println("le poids total de bays29 est:", total_weigth_edges(couvrant_bays29) )
-        # println("le poids total de swiss42 est:", total_weigth_edges(couvrant_swiss42) )
-        # println("le poids total de gr24 est:", total_weigth_edges(couvrant_gr24) )
-        # println("le poids total de dantzig42 est:", total_weigth_edges(couvrant_dantzig42) )
-
-
-
+        pa561 = "instances/stsp/pa561.tsp"
+        couvrant_pa561_kruskal = main_kruskal2(pa561)
+        couvrant_pa561_prim = main_prim(pa561)
+        @test total_weigth_edges(couvrant_pa561_kruskal) == 2396
+        @test total_weight(couvrant_pa561_prim) == 2396
         
     end
 

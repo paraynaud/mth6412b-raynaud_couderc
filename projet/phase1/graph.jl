@@ -1,4 +1,4 @@
-import Base.show, Base.==, Base.merge
+import Base.show, Base.==, Base.merge, Base.isless
 
 
 """Type abstrait dont d'autres types de graphes dériveront."""
@@ -45,40 +45,40 @@ Exemple :
 
 Attention, tous les noeuds doivent avoir des données de même type.
 """
-mutable struct Graph{T} <: AbstractGraph{T}
+mutable struct GraphDic{T} <: AbstractGraph{T}
   name::String
   nodes::Vector{Node{T}}
   edges::Dict{Tuple{Node{T},Node{T}}, Edge{T}}
 end
 
 
-function Graph(name::String, nodes::Vector{Node{T}}, edges::Vector{Edge{T}}) where T 
+function GraphDic(name::String, nodes::Vector{Node{T}}, edges::Vector{Edge{T}}) where T 
   dic_edges = Dict{Tuple{Node{T},Node{T}}, Edge{T}}()
   for edge in edges 
     dic_edges[(node1(edge), node2(edge))] = edge
   end 
-  Graph{T}(name, nodes, dic_edges)
+  GraphDic{T}(name, nodes, dic_edges)
 end 
 
 
 """Ajoute un noeud au graphe."""
-function add_node!(graph::Graph{T}, node::Node{T}) where T
+function add_node!(graph::GraphDic{T}, node::Node{T}) where T
   push!(graph.nodes, node)
   graph
 end
 
 """Ajoute une arête au graphe. edges(graph) renvoie le Dict d'arêtes de graph"""
-function add_edge!(graph::Graph{T}, edge::Edge{T}) where T
+function add_edge!(graph::GraphDic{T}, edge::Edge{T}) where T
   edges(graph)[(node1(edge), node2(edge))] = edge
   graph
 end
 
 """ Vérifie la présence de node dans l'ensemble des sommets de graph"""
-nodein(graph::Graph{T}, node::Node{T}) where T = findfirst( n -> n==node, nodes(graph)) != nothing
+nodein(graph::GraphDic{T}, node::Node{T}) where T = findfirst( n -> n==node, nodes(graph)) != nothing
 
 
 """Affiche un graphe"""
-function show(graph::Graph)
+function show(graph::AbstractGraph)
   println("Graph ", name(graph), " has ", nb_nodes(graph), " nodes and ", nb_edges(graph), " edges.")
   println("Nodes:")
   for node in nodes(graph)
@@ -92,7 +92,7 @@ function show(graph::Graph)
 end
 
 """Affiche uniquement les noeuds d'un graphe. Si il y a trop d'arêtes la méthode show ne permet pas de voir les noeuds.""" 
-function show_nodes(graph::Graph)
+function show_nodes(graph::AbstractGraph)
   println("Graph ", name(graph), " has ", nb_nodes(graph), " nodes and ", nb_edges(graph), " edges.")
   println("Nodes:")
   for node in nodes(graph)
@@ -101,11 +101,11 @@ function show_nodes(graph::Graph)
 end
 
 """On merge deux Graph, l'union des 2 graphs est composé de l'union des sommets et des arêtes. On choisit de garder le nom de graph1 """
-function merge(graph1::Graph{T}, graph2::Graph{T}) where T
+function merge(graph1::GraphDic{T}, graph2::GraphDic{T}) where T
   nodes_union = unique(vcat(nodes(graph1), nodes(graph2)))
   edges_union = merge(edges(graph1), edges(graph2))
   graph_name = name(graph1)
-  merged_graph = Graph{T}(graph_name, nodes_union, edges_union)
+  merged_graph = GraphDic{T}(graph_name, nodes_union, edges_union)
   return merged_graph
 end 
 
@@ -146,7 +146,7 @@ end
   kruskal(graph)
 Implémentation de l'algorithme de kruskal, trouvant pour un graph g son arbre couvrant de poids minimum.
 """
-function kruskal(g :: Graph{T}) where T
+function kruskal(g :: GraphDic{T}) where T
   _nodes = nodes(g)
   _edges = edges(g)
   
@@ -163,20 +163,26 @@ function kruskal(g :: Graph{T}) where T
   end
   
   length(cc_vector) != 1 && @error("nombre de composante connexe différent de 1") # vérification du nombre de composante connexe
-  return cc_vector[1] # Renvoie la dernière composante connexe, qui peut-être traitée comme un Graph
+  return cc_vector[1] # Renvoie la dernière composante connexe, qui peut-être traitée comme un GraphDic
 end 
 
-function kruskal2(g :: Graph{T}) where T
+
+"""
+    kruskal2(graph)
+Deuxième implémentation de l'algoorithme de Kruskal. 
+Cette implémentation de Krurskal utilisent les heuristiques d'améliorations.
+"""
+function kruskal2(g :: GraphDic{T}) where T
   _nodes = nodes(g)
   _edges = edges(g)
-  @show length(_edges)
+
   vector_edges = Vector{Edge{T}}( map( edge -> edge[2], collect(_edges ) ))
   sort!(vector_edges)
 
   cc_vector = ConnectedComponent2{T}[]
   for (i, node) in enumerate(_nodes)
     set_index!(node, i)
-    push!(cc_vector, ConnectedComponent2([0.0], index = i))
+    push!(cc_vector, ConnectedComponent2( data(node), index = i))
   end
 
   edges_res = Edge{T}[]
@@ -190,11 +196,78 @@ function kruskal2(g :: Graph{T}) where T
     
     if (find!(cc1) != find!(cc2)) 
       push!(edges_res, edge)
-      union(cc1, cc2)
+      union!(cc1, cc2)
     end
 
   end
 
-  graph = Graph("Arbre couvrant", _nodes, edges_res)
+  graph = GraphDic("Arbre couvrant", _nodes, edges_res)
   return graph
 end 
+
+
+mutable struct Couple{T,Y} 
+  fst :: T
+  snd :: Y
+end 
+
+fst(c :: Couple{T,Y}) where T where Y = c.fst
+snd(c :: Couple{T,Y}) where T where  Y = c.snd
+isless(c1 ::  Couple{T,Y},c2 :: Couple{T,Y}) where T where Y =  snd(c1) < snd(c2)
+==(c1 ::  Couple{T,Y},c2 :: Couple{T,Y}) where T where Y =  snd(c1) == snd(c2)
+
+mutable struct GraphList{T} <: AbstractGraph{T}
+  name :: String
+  adj_list :: Dict{ MarkedNode{T}, Vector{ Couple{MarkedNode{T},Float64} } }
+end
+
+adj_list(g :: GraphList{T}) where T = g.adj_list
+
+"""
+    neighbours(graph,node)
+renvoie la liste des voisins de node.
+"""
+function neighbours(g :: GraphList{T}, node :: MarkedNode{T}) where T
+  key_node = node
+  for i in keys(adj_list(g))
+    if i==node
+      key_node = i
+      continue
+    end 
+  end 
+  neighbours = adj_list(g)[key_node]
+  return neighbours
+end 
+
+
+"""
+    prim(graph; source=s)
+Implémentation de l'arlgorithme de Prim, si la source n'est pas définie l'algorithme en attribue une aléatoirement.
+"""
+function prim(g :: GraphList{T}; source=first(adj_list(g))[1]) where T 
+  #Initialiisation
+  set_distance!(source, 0.0)
+  nodes = [k for k in keys(adj_list(g)) ]
+  queue = create_marked_node_queue(nodes)
+  arbre_couvrant = Vector{eltype(nodes)}([])
+
+  while is_empty(queue) == false
+    node_min = data(min_weight(queue)) # on réucpère l'élément de coût minimal de la file de priorité
+    push!(arbre_couvrant, node_min) # ajout dans la liste des sommets formant l'arbre couvrant
+    delete_item(queue, node_min) # suppression de noeud minimum dans la file de priorité
+    set_visited!(node_min) # set l'attribut visited de node_min à true
+
+    voisins = neighbours(g, node_min) #récupération des voisin de node_min
+    for couple_voisin_poids in voisins            
+      poids = snd(couple_voisin_poids)
+      voisin = fst(couple_voisin_poids)
+      if is_visited(voisin) == false && distance(voisin) >= poids # mise à jour du noeud si celui ci n'appartient pas encore à l'arbre couvrant
+        set_distance!(voisin, poids)
+        set_parent!(voisin, node_min)
+        update!(queue, voisin, poids) #mise à jour dans la file de priorité
+      end 
+    end  
+  end
+  arbre_couvrant
+end 
+

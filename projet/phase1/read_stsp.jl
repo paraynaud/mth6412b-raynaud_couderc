@@ -92,7 +92,6 @@ end
 
 """Analyse un fichier .tsp et renvoie l'ensemble des arêtes sous la forme d'un tableau."""
 function read_edges(header::Dict{String}{String}, filename::String)
-
   edges = []
   edge_weight_format = header["EDGE_WEIGHT_FORMAT"]
   known_edge_weight_formats = ["FULL_MATRIX", "UPPER_ROW", "LOWER_ROW",
@@ -243,9 +242,7 @@ end
 
 
 
-
-"""Construit un graph à partir des instance de TSP symétrique dont les poids sont données au format EXPLICIT"""
-function main(filename::String)
+function create_graph_dic_from_file(filename::String)
   Base.print("Reading of header : ")
   header = read_header(filename)
   #@show header
@@ -298,11 +295,102 @@ function main(filename::String)
   println("✓")
 
   name = header.vals[end]
+  graph = GraphDic(name, nodes_vector, edges_vector)
 
-  graph = Graph(name, nodes_vector, edges_vector)
+  return graph
+end 
+
+
+
+"""Construit un graph à partir des instance de TSP symétrique dont les poids sont données au format EXPLICIT"""
+function main_kruskal2(filename::String)
+
+  graph = create_graph_dic_from_file(filename)
   arbre_couvrant = kruskal2(graph)
   
   return arbre_couvrant
 end 
 
 
+""" Construit un graphe stocké sous forme de liste d'adjacence, de type GraphList défini dans graph.jl"""
+function create_graph_list_from_file(filename::String)
+  Base.print("Reading of header : ")
+  header = read_header(filename)
+  #@show header
+  println("✓")
+  dim = parse(Int, header["DIMENSION"])
+  edge_weight_format = header["EDGE_WEIGHT_FORMAT"]
+
+  Base.print("Reading of nodes : ")
+  graph_nodes = read_nodes(header, filename)
+  println("✓")
+
+  Base.print("Reading of edges : ")
+  edges_brut = read_edges(header, filename)
+  println("✓")
+
+
+  Base.print("Transcripting of nodes : ")
+  T = valtype(graph_nodes)
+  nodes_vector = Vector{MarkedNode{T}}(undef,dim)
+
+
+  reset_index_marked_node()
+  if isempty(graph_nodes) #les données des noeuds ne sont pas spécifiées
+    map!( i -> MarkedNode(T()), nodes_vector, [1:dim;]) # création de dim sommets par défaut, pour remplacer l'absence de données 
+  else #les données des noeuds sont spécifiées
+    keys_graph_node = keys(graph_nodes)
+    for key in keys_graph_node
+      node = MarkedNode(graph_nodes[key]) 
+      nodes_vector[key] = node
+    end 
+  end 
+  println("✓")
+
+  Base.print("Transcripting of edges : ")
+  edges_brut = read_edges(header, filename)
+  dic = Dict{ MarkedNode{T}, Vector{ Couple{MarkedNode{T},Float64} } }()
+
+  for i in nodes_vector
+    get!(dic, i, Vector{Couple{MarkedNode{T},Float64}}(undef,0))   
+  end 
+
+
+  for data_edge ::Tuple{Int,Int,String} in edges_brut
+    weight = parse(Float64,data_edge[3])
+    index1 = data_edge[1] :: Int
+    index2 = data_edge[2] :: Int
+    if isempty(graph_nodes)    
+      node1 = MarkedNode(T(); _index=index1) :: MarkedNode{T}
+      node2 = MarkedNode(T(); _index=index2) :: MarkedNode{T}  
+      key1 = nodes_vector[findfirst(x -> x == node1, nodes_vector) ]
+      key2 = nodes_vector[findfirst(x -> x == node2, nodes_vector) ]
+    else
+      node1 = MarkedNode(graph_nodes[index1];_index=index1) :: MarkedNode{T}
+      node2 = MarkedNode(graph_nodes[index2];_index=index2) :: MarkedNode{T}
+      key1 = nodes_vector[findfirst(x -> data(x) == data(node1), nodes_vector) ]
+      key2 = nodes_vector[findfirst(x -> data(x) == data(node2), nodes_vector) ]
+    end
+    push!(dic[key1], Couple(key2, weight)) 
+    push!(dic[key2], Couple(key1, weight)) 
+
+  end 
+
+  println("✓")
+
+  name = header.vals[end]
+  graph = GraphList(name, dic)
+
+  return graph
+end 
+
+
+"""Construit un graph à partir des instance de TSP symétrique dont les poids sont données au format EXPLICIT, 
+puis applique l'algorithme de prim de manière à obtenir un arbre couvrant"""
+function main_prim(filename::String)
+
+  graph_list = create_graph_list_from_file(filename)
+  arbre_couvrant = prim(graph_list)
+  
+  return arbre_couvrant
+end 

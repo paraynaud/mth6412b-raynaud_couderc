@@ -6,7 +6,7 @@ abstract type AbstractConnectedComponent{T} <: AbstractGraph{T} end
 # des champs `sub_graph` et `root`.
 
 mutable struct ConnectedComponent{T} <: AbstractConnectedComponent{T}
-    sub_graph :: Graph{T}
+    sub_graph :: AbstractGraph{T}
     root :: Node{T}
     index::Int
     size::Int
@@ -18,6 +18,7 @@ mutable struct ConnectedComponent2{T} <: AbstractConnectedComponent{T}
     index::Int
     size::Int
 end 
+
 
 
 """Renvoie le nom du graphe."""
@@ -39,7 +40,7 @@ end
 @inline (==)(connected_component1::ConnectedComponent, connected_component2::ConnectedComponent) = (nodes(connected_component1) == nodes(connected_component2)) && (edges(connected_component1) == edges(connected_component2)) && (name(connected_component1) == name(connected_component2)) && (root(connected_component1) == root(connected_component2))
 
 """Définition de l'égalité entre graph""" 
-@inline (==)(connected_component1::ConnectedComponent2, connected_component2::ConnectedComponent2) = root(connected_component1) == root(connected_component2) && index(connected_component1) == index(connected_component2)
+@inline (==)(connected_component1::ConnectedComponent2, connected_component2::ConnectedComponent2) = root(connected_component1) == root(connected_component2) && index(connected_component1) == index(connected_component2) && data(connected_component1) == data(connected_component2) 
 
 """Vérifie l'existence de node dans connected_component"""
 nodein(connected_component::ConnectedComponent, node:: Node{T}) where T = nodein(connected_component.sub_graph, node)
@@ -64,7 +65,7 @@ nodein(connected_component::ConnectedComponent, node:: Node{T}) where T = nodein
 """
 global _index_cc = 0
 ConnectedComponent(root::Node{T};
-                   sub_graph::Graph{T}=Graph("connected_component",
+                   sub_graph::GraphDic{T}=GraphDic("connected_component",
                                             [root],
                                             Edge{T}[]),
                    index::Int=_index_cc, 
@@ -75,13 +76,16 @@ function ConnectedComponent2(
                    data::T;
                    root::Union{ConnectedComponent2{T}, Nothing}=nothing,
                    index::Int=_index_cc, 
-                   size::Int = 1) where T 
+                   size::Int = 0) where T 
 
 ConnectedComponent2(data, root, index, size) 
 end
 
+@inline data(cc :: ConnectedComponent2{T}) where T = cc.data
+
+
 """ set_sub_graph!(connected_component, graph), setter du champ sub_graph de connected_component """
-set_sub_graph!(cc :: ConnectedComponent{T}, g :: Graph{T}) where T = cc.sub_graph = g
+set_sub_graph!(cc :: ConnectedComponent{T}, g :: AbstractGraph{T}) where T = cc.sub_graph = g
 
 """ set_root!(connected_component, root), setter du champ root de connected_component """
 set_root!(cc :: ConnectedComponent2{T}, r :: ConnectedComponent2{T}) where T = cc.root = r
@@ -111,30 +115,30 @@ function merge!(vector_cc :: Vector{ConnectedComponent{T}}, edge :: Edge{T}) whe
     return cc1
 end 
 
-function union(cc1 :: ConnectedComponent2{T}, cc2 :: ConnectedComponent2{T}) where T
-    r1 = find!(cc1)
-    r2 = find!(cc2)
+"""
+    Correspond à l'heuristique 1 (union via le rang)
+"""
+function union!(cc1 :: ConnectedComponent2{T}, cc2 :: ConnectedComponent2{T}) where T
+    root1 = find!(cc1)
+    root2 = find!(cc2)
+    
 
-    if r1 != r2 
-        if size(r1) < size(r2)
-            set_root!(r1, r2)
+    if root1 != root2 
+        if size(root1) < size(root2)
+            set_root!(root1, root2)            
         else 
-            set_root!(r2, r1)
-            if size(r1)  == size(r2)
-                set_size!(r2, size(r2)+1 )
+            set_root!(root2, root1)
+            if size(root1) == size(root2)
+                set_size!(root1, size(root1)+1 )
             end
         end
     end
-    
+    return root(cc1)
 end
 
-function find(cc::ConnectedComponent2)
-    if root(cc) ==  nothing
-        return cc
-    end
-    return find(root(cc))
-end 
+"""
 
+"""
 function find!(cc::ConnectedComponent2)
     if root(cc) ==  nothing
         return cc

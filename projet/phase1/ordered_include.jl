@@ -1,4 +1,6 @@
 include("node.jl")
 include("edge.jl")
+include("priority.jl")
+include("file.jl")
 include("graph.jl")
 include("read_stsp.jl")

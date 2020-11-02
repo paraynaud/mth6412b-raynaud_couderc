@@ -1,4 +1,4 @@
-using BenchmarkTools
+using BenchmarkTools, Test
 
 code_path="projet/phase1/"
 
@@ -21,9 +21,24 @@ include(code_path*"ordered_include.jl")
 
 
 
+filename = "instances/stsp/pa561.tsp"
 
-arbre_couvrant = main("instances/stsp/course_note.tsp")
 
-total_weigth_edges(arbre_couvrant)
+graph = create_graph_dic_from_file(filename)
+list_adjacence = create_graph_list_from_file(filename)
 
-@benchmark (main("instances/stsp/pa561.tsp"))
+
+bench_dic = @benchmark ( kruskal2(graph))
+
+
+bench_list = @benchmark prim(list_adjacence)
+couvrant = prim(list_adjacence)
+
+function total_weight(arbre_couvrant)
+    sum = 0
+    for i in arbre_couvrant
+        sum = sum + distance(i)
+    end 
+    return sum
+end 
+@show total_weight(couvrant)
