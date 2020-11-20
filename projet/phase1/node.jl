@@ -92,7 +92,10 @@ function set_visited!(node::MarkedNode)
   node
 end
 
-is_visited(node::MarkedNode) = (node.visited == true)
+function reset_visit!(node :: MarkedNode)
+  node.visited = false
+  node  
+end
 
 function set_distance!(node::MarkedNode, d::Float64)
   node.distance = max(0.0, d)

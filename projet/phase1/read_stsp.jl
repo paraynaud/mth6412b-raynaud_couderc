@@ -302,16 +302,6 @@ end
 
 
 
-"""Construit un graph à partir des instance de TSP symétrique dont les poids sont données au format EXPLICIT"""
-function main_kruskal2(filename::String)
-
-  graph = create_graph_dic_from_file(filename)
-  arbre_couvrant = kruskal2(graph)
-  
-  return arbre_couvrant
-end 
-
-
 """ Construit un graphe stocké sous forme de liste d'adjacence, de type GraphList défini dans graph.jl"""
 function create_graph_list_from_file(filename::String)
   Base.print("Reading of header : ")
@@ -391,6 +381,27 @@ function main_prim(filename::String)
 
   graph_list = create_graph_list_from_file(filename) #Créé un graphe de liste d'adjacence à partir de filename
   arbre_couvrant = prim(graph_list) #applique Prim à ce même graphe pour trouver un arbre couvrant
+  
+  return arbre_couvrant
+end 
+
+
+"""Construit un graph à partir des instance de TSP symétrique dont les poids sont données au format EXPLICIT"""
+function main_kruskal(filename::String)
+
+  graph_list = create_graph_list_from_file(filename) #Créé un graphe de liste d'adjacence à partir de filename
+  arbre_couvrant = kruskal(graph_list)
+  
+  return arbre_couvrant
+end 
+
+
+
+"""Construit un graph à partir des instance de TSP symétrique dont les poids sont données au format EXPLICIT"""
+function main_kruskal2(filename::String)
+
+  graph = create_graph_dic_from_file(filename)
+  arbre_couvrant = kruskal2(graph)
   
   return arbre_couvrant
 end 

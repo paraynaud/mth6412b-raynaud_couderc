@@ -64,7 +64,7 @@ end
 """ Met à jour la file de priorité queue, vérifie si le noeud n'appartient pas à l'arbre couvrant avant de le mettre à jour """
 function update!(queue :: Queue{PriorityItem{MarkedNode{T}}}, node :: MarkedNode{T}, new_priority :: Float64) where T
     _index = index(queue, node )
-    if is_visited(node) == false 
+    if visited(node) == false 
         queue.items[_index] = PriorityItem(new_priority, node)   
     end 
     queue
