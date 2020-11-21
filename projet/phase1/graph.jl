@@ -160,18 +160,18 @@ function dfs_visit_iter(G::GraphList{T}, node::MarkedNode{T}) where T
     reset_visit!.(keys_node)
     s = Stack{MarkedNode{T}}()
     push!(s, node)
-    res = []
+    res_nodes = []
 
     while is_empty(s) == false
         u = pop!(s)
         set_visited!(u)
-        push!(res,u ) #ajout
+        push!(res_nodes,u ) #ajout
 
         for neighbor in neighbours(G, u)
             visited(fst(neighbor)) || push!(s, fst(neighbor))
         end
     end
-    return res 
+    return res_nodes 
 end
 
 

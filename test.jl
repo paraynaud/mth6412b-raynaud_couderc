@@ -211,6 +211,10 @@ include(code_path*"ordered_include.jl")
 			swiss42 = "instances/stsp/swiss42.tsp"
 			couvrant_swiss42_kruskal = main_kruskal2(swiss42)
 			couvrant_swiss42_prim = main_prim(swiss42)
+			couvrant_swiss42_prim_2 = main_prim(swiss42)
+			# @test couvrant_swiss42_prim_2 == couvrant_swiss42_prim
+			# @test sum((==).(couvrant_swiss42_prim_2, couvrant_swiss42_prim)) == 42
+			# @show (==).(couvrant_swiss42_prim_2, couvrant_swiss42_prim)
 			@test total_weigth_edges(couvrant_swiss42_kruskal) == 1079
 			@test total_weight(couvrant_swiss42_prim) == 1079
 
@@ -250,28 +254,48 @@ include(code_path*"ordered_include.jl")
 		end 
 		return b
 	end 
+
+	function total_weight(edges)
+		sum = 0
+		for i in 1:length(edges)
+			sum = sum + edges[i].weight
+		end 
+		return sum
+	end 
     
     
     
-    filename = "instances/stsp/course_note.tsp"
-    res_course_note = rsl(filename)
+    # filename = "instances/stsp/course_note.tsp"
+    # res_course_note = rsl(filename)
 
-    @test length(res_course_note) == 9
-    @test check_pas_de_doublon(res_course_note)
-
-
-    filename = "instances/stsp/bayg29.tsp"
-    res_bayg29 = rsl(filename)
-
-    @test length(res_bayg29) == 29
-    @test check_pas_de_doublon(res_bayg29)
+    # @test length(res_course_note) == 9
+    # @test check_pas_de_doublon(res_course_note)
 
 
-    filename = "instances/stsp/pa561.tsp"
-    res_pa561 = rsl(filename)
-    @test length(res_pa561) == 561
-    @test check_pas_de_doublon(res_pa561)
-    
-    
+    filename = "instances/stsp/bays29.tsp"
+	nodes_bays29, edges_bays29 = rsl(filename)
+	weight = total_weight(edges_bays29)
 
+	@test 2020 <= weight <= 2*2020
+
+	filename = "instances/stsp/bayg29.tsp"
+	nodes_bayg29, edges_bayg29 = rsl(filename)
+	weight = total_weight(edges_bayg29)
+	@test 1610 <= weight <= 2*1610
+
+	filename = "instances/stsp/pa561.tsp"
+	nodes_pa561, edges_pa561 = rsl(filename)
+	weight = total_weight(edges_pa561)
+	@test 2763 <= weight <= 2*2763
+	
+
+    # @test length(res_bayg29) == 29
+    # @test check_pas_de_doublon(res_bayg29)
+
+
+    # filename = "instances/stsp/pa561.tsp"
+    # res_pa561 = rsl(filename)
+    # @test length(res_pa561) == 561
+	# @test check_pas_de_doublon(res_pa561)
+	
 end
