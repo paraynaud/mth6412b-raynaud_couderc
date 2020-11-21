@@ -15,7 +15,7 @@ end
 
 
 # filename = "instances/stsp/pa561.tsp"
-filename = "instances/stsp/bayg29.tsp"
+# filename = "instances/stsp/bayg29.tsp"
 # filename = "instances/stsp/course_note.tsp"
 
 

@@ -24,7 +24,7 @@ function opt(g :: GraphList{T}, nodes :: Vector, edges ::Vector) where T
     while improve
         improve = false
         for i in 1:length(nodes)-1
-            for j in 1:length(nodes)-1
+            for j in i:length(nodes)-1
                 if j != i && j != i+1 && j!= i-1
                     node_1 = nodes[i]
                     node_2 = nodes[i+1]
@@ -46,21 +46,10 @@ function opt(g :: GraphList{T}, nodes :: Vector, edges ::Vector) where T
                     weight4 = snd(voisins2[idx])
 
                     if weight1 + weight2 > weight3 + weight4
-                        # @show i, j
-                        # idx1 = findfirst(x -> (node1(x) == node_1 && node2(x) == node_2) || (node1(x) == node_2 && node2(x) == node_1)  , edges)
-                        # idx2 = findfirst(x -> (node1(x) == node_3 && node2(x) == node_4) || (node1(x) == node_4 && node2(x) == node_3) , edges)
-                        # @show idx1, idx2
-                        # edges[idx1] = Edge(node_1, node_3, weight3)
-                        # edges[idx2] = Edge(node_2, node_4, weight4)
                         edges[i] = Edge(node_1, node_3, weight3)
-                        edges[j] = Edge(node_2, node_4, weight4)
-                        idx_min = min(i+1, j)
-                        idx_max = max(i+1, j)
-                        reverse!(edges, idx_min,  idx_max -1)
-                        reverse!(nodes, idx_min,  idx_max)
-                        # reverse!(nodes, i+1,  j)
-                        # show.(nodes) 
-                        # show.(edges)
+                        edges[j] = Edge(node_2, node_4, weight4)                        
+                        reverse!(edges, i+1,  j -1)
+                        reverse!(nodes, i+1,  j)                        
                         improve = true
                     end
                 end
