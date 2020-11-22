@@ -81,3 +81,43 @@ function ascent(graph)
 end 
 
 
+
+
+function generate_candidates(max_candidates :: Float64, max_alpha:: Float64) 
+	Node *From, *To;
+	alpha :: Float64 = 0 ;
+	Candidate *Edge;
+	
+	ForAllNodes(From)
+	From->Mark = 0;
+	ForAllNodes(From) {
+	if (From != FirstNode) {
+	From->Beta = LONG_MIN;
+	for (To = From; To->Dad != 0; To = To->Dad) {
+	To->Dad->Beta = max(To->Beta, To->Cost);
+	To->Dad->Mark = From;
+	}
+	}
+	ForAllNodes(To, To != From) {
+	if (From == FirstNode)
+	Alpha = To == From->Father ? 0 :
+	C(From,To) - From->NextCost;
+	else if (To == FirstNode)
+	Alpha = From == To->Father ? 0:
+	C(From,To) - To->NextCost;
+	else {
+	if (To->Mark != From)
+	To->Beta = max(To->Dad->Beta, To->Cost);
+	Alpha = C(From,To) - To->Beta;
+	}
+	if (Alpha <= MaxAlpha)
+	InsertCandidate(To, From->CandidateSet);
+	}
+	}
+	if (SymmetricCandidates)
+	ForAllNodes(From)
+	ForAllCandidates(To, From->CandidateSet)
+	if (!IsMember(From, To->CandidateSet))
+	InsertCandidate(From, To->CandidateSet);
+	}
+end 

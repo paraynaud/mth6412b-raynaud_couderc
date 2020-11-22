@@ -73,6 +73,7 @@ mutable struct MarkedNode{T} <: AbstractNode{T}
   best_pi :: Float64
   v :: Int
   last_v :: Int
+  beta :: Float64
 end
 
 """ Utilisation d'une variable globale lors de la création du graphe pour nous simplifier la distinction entre 2 noeud étant initialisé sans donnée"""
@@ -84,9 +85,9 @@ function reset_index_marked_node()
 end 
 
 """Constructeur de MarkedNode """
-function MarkedNode(data::T; name::String="", distance::Float64=Inf, _index::Int=_index_marked_node) where T
+function MarkedNode(data::T; name::String="", distance::Float64=Inf, _index::Int=_index_marked_node, pi::Float64=0.0, best_pi::Float64=0.0, v::Int=-1, last_v::Int=-1, beta::Float64=Inf) where T
   global _index_marked_node +=1
-  MarkedNode(name, data, false, max(0.0, distance), nothing, _index, 0.0, 0.0, 0, 0)
+  MarkedNode(name, data, false, max(0.0, distance), nothing, _index, pi, best_pi, v, last_v, beta)
 end
 
 
