@@ -119,12 +119,15 @@ Renvoie un vecteur des
 function prim(g :: GraphList{T}; source=first(adj_list(g))[1]) where T 
   #Initialiisation
   set_distance!(source, 0.0)
-  nodes = [k for k in keys(adj_list(g)) ]
-  queue = create_marked_node_queue(nodes)
-  arbre_couvrant = Vector{eltype(nodes)}([])
+  _nodes = nodes(g)
+  queue = create_marked_node_queue(_nodes, source)
+  arbre_couvrant = Vector{eltype(_nodes)}([])
 
   while is_empty(queue) == false
     node_min = data(min_weight(queue)) # on récupère l'élément de coût minimal de la file de priorité
+    priority_item_node_min = get_priority_item(queue, node_min)
+    priority_node_min = priority(priority_item_node_min)
+    set_distance!(node_min, priority_node_min)
     push!(arbre_couvrant, node_min) # On ajoute cette élément dans la liste des sommets formant l'arbre couvrant
     delete_item(queue, node_min) # suppression du noeud minimum dans la file de priorité
     set_visited!(node_min) # set l'attribut visited de node_min à true
@@ -134,15 +137,19 @@ function prim(g :: GraphList{T}; source=first(adj_list(g))[1]) where T
     for couple_voisin_poids in voisins            
       poids = snd(couple_voisin_poids)
       voisin = fst(couple_voisin_poids)
-      if visited(voisin) == false && distance(voisin) >= poids # mise à jour du noeud si celui ci n'appartient pas encore à l'arbre couvrant
-        set_distance!(voisin, poids)
-        set_parent!(voisin, node_min)
-        update!(queue, voisin, poids) #mise à jour dans la file de priorité
+      if visited(voisin) == false 
+        priority_item_voisin = get_priority_item(queue, voisin)
+        priority_voisin = priority(priority_item_voisin)
+        if priority_voisin >= poids # mise à jour du noeud si celui ci n'appartient pas encore à l'arbre couvrant        
+          set_parent!(voisin, node_min)
+          update!(queue, voisin, poids) #mise à jour dans la file de priorité
+        end 
       end 
     end  
   end
   arbre_couvrant
 end 
+
 
 function build_graph_list(arbre_crouvrant :: Vector{MarkedNode{T}}) where T
   edges = Dict{ MarkedNode{T}, Vector{ Couple{MarkedNode{T},Float64} } }()
@@ -161,3 +168,39 @@ function build_graph_list(arbre_crouvrant :: Vector{MarkedNode{T}}) where T
   return graph_result 
 end 
 
+
+
+function minimum_1_tree(graph :: GraphList{T}) where T
+  _graph = copy(graph)
+  (lone_node, graph_tmp) = graph_minus_one_vertex(_graph)
+  _res_nodes = prim(graph_tmp)
+  new_adj_list = create_edges(_res_nodes)
+
+  _sorted_edges_lone_node = sort(adj_list(_graph)[lone_node])
+  _edge_sup_1 = _sorted_edges_lone_node[1]
+  _edge_sup_2 = _sorted_edges_lone_node[2]
+
+  get!(new_adj_list, lone_node, Vector{Couple{MarkedNode{T},Float64}}(undef,0))   
+  push!(new_adj_list[lone_node], _edge_sup_1)
+  push!(new_adj_list[lone_node], _edge_sup_2)
+
+  one_tree = GraphList{T}("1-tree", new_adj_list)
+  return one_tree
+end 
+  
+function create_edges(_res_nodes :: Vector{MarkedNode{T}}) where T 
+  new_adj_list = Dict{ MarkedNode{T}, Vector{ Couple{MarkedNode{T},Float64} } }()
+  for node in _res_nodes
+    get!(new_adj_list, node, Vector{Couple{MarkedNode{T},Float64}}(undef,0))   
+  end 
+  for node in _res_nodes		
+    if parent(node) != nothing
+      _node1 = parent(node)
+      _node2 = node 
+      _weight = distance(node)
+      push!(new_adj_list[_node1], Couple(_node2, _weight)) 
+      push!(new_adj_list[_node2], Couple(_node1, _weight)) 
+    end 
+  end 
+  return new_adj_list
+end 

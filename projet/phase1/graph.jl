@@ -1,4 +1,4 @@
-import Base.show, Base.==, Base.merge, Base.isless
+import Base.show, Base.==, Base.merge, Base.isless, Base.copy
 
 
 """Type abstrait dont d'autres types de graphes dériveront."""
@@ -122,45 +122,33 @@ mutable struct GraphList{T} <: AbstractGraph{T}
 end
 
 adj_list(g :: GraphList{T}) where T = g.adj_list
+""" renvoies les noeuds d'un graphe stocké sous forme de liste d'adjacence"""
+nodes(g :: GraphList{T}) where T = collect(keys(adj_list(g))) :: Vector{MarkedNode{T}}
 
-
+copy(g:: GraphList{T}) where T = GraphList(name(g), copy(adj_list(g)))
 """
     neighbours(graph,node)
 renvoie la liste des voisins de node.
 """
 function neighbours(g :: GraphList{T}, node :: MarkedNode{T}) where T
-  key_node = node
-  for i in keys(adj_list(g))
-    if i==node
-      key_node = i
-      continue
-    end 
-  end 
-  neighbours = adj_list(g)[key_node]
+  # key_node = node
+  # for i in keys(adj_list(g))
+  #   if i==node
+  #     key_node = i
+  #     continue
+  #   end 
+  # end 
+  # neighbours = adj_list(g)[key_node]
+  neighbours = adj_list(g)[node]
   return neighbours
 end 
-
-function pre_ordre(graph :: GraphList{T}; node :: MarkedNode{T}) where T 
-  res = [node]
-  for i in adj_list(graph)
-    
-  end 
-end 
-
-
-# function dfs_iter(v_nodes :: Array{MarkedNode})    
-#     for node in v_nodes
-#         visited(node) || dfs_visit_iter(G, node)
-#     end
-#     return
-# end
 
 function dfs_visit_iter(G::GraphList{T}, node::MarkedNode{T}) where T
     keys_node = collect(keys(adj_list(G)))
     reset_visit!.(keys_node)
     s = Stack{MarkedNode{T}}()
     push!(s, node)
-    res_nodes = []
+    res_nodes = Vector{MarkedNode{T}}([])
 
     while is_empty(s) == false
         u = pop!(s)
@@ -174,36 +162,36 @@ function dfs_visit_iter(G::GraphList{T}, node::MarkedNode{T}) where T
     return res_nodes 
 end
 
+function graph_minus_one_vertex(graph :: GraphList{T}) where T
+  _graph = copy(graph)
+  nodes_vector = nodes(_graph) 
+  adjacency_list = adj_list(_graph)
+  nodes_minus_one = nodes_vector[2:end]
+  lone_node = nodes_vector[1]
+  new_adj_list = Dict{ MarkedNode{T}, Vector{ Couple{MarkedNode{T},Float64} } }()
+  for node in nodes_minus_one    
+    _tmp = filter( node -> fst(node) != lone_node, adjacency_list[node])
+    get!(new_adj_list, node, _tmp)       
+    # Vector{Couple{MarkedNode{T},Float64}}(undef,0)
+    # new_adj_list[node] = adjacency_list[node]
+  end 
+  new_graph = GraphList(name(_graph)*" without first node", new_adj_list)
+  return (lone_node, new_graph)
+end 
 
 function show(g :: GraphList{T}) where T
   keys_node = collect(keys(adj_list(g)))
-  
-
   for node in keys_node
-    show(node)
+    print("degrès: ", length(adj_list(g)[node]), " ")
+    show(node)    
     for voisin in adj_list(g)[node]        
     print("### ")
     show(fst(voisin) )    
-    
     end 
   end 
-
-  # index_racine = findfirst(node -> parent(node) == nothing, keys_node)
-  # node = keys_node[index_racine]
-  # println(name(g))
-  # s = Stack{MarkedNode{T}}()
-  # push!(s, node)
-  
-
-  # while is_empty(s) == false
-  #     u = pop!(s)
-  #     set_visited!(u)
-  #     println(adj_list(g)[u])
-  #     show(u)
-  #     print("----> ")
-  #     for neighbor in neighbours(g, u)        
-  #         show(fst(neighbor))
-  #         visited(fst(neighbor)) || push!(s, fst(neighbor))
-  #     end
-  # end  
 end 
+
+
+ 
+
+

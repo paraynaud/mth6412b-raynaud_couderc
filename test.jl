@@ -273,9 +273,9 @@ include(code_path*"ordered_include.jl")
 
 
     filename = "instances/stsp/bays29.tsp"
-	nodes_bays29, edges_bays29 = rsl(filename)
+	nodes_bays29, edges_bays29 = rsl(filename)	
+	# nodes_bays29_1, edges_bays29_1, nodes_bays29_2, edges_bays29_2
 	weight = total_weight(edges_bays29)
-
 	@test 2020 <= weight <= 2*2020
 
 	filename = "instances/stsp/bayg29.tsp"

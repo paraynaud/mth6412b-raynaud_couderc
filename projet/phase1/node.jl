@@ -69,6 +69,10 @@ mutable struct MarkedNode{T} <: AbstractNode{T}
   distance::Float64
   parent::Union{MarkedNode{T},Nothing}
   index:: Int
+  pi :: Float64
+  best_pi :: Float64
+  v :: Int
+  last_v :: Int
 end
 
 """ Utilisation d'une variable globale lors de la création du graphe pour nous simplifier la distinction entre 2 noeud étant initialisé sans donnée"""
@@ -82,7 +86,7 @@ end
 """Constructeur de MarkedNode """
 function MarkedNode(data::T; name::String="", distance::Float64=Inf, _index::Int=_index_marked_node) where T
   global _index_marked_node +=1
-  MarkedNode(name, data, false, max(0.0, distance), nothing, _index)
+  MarkedNode(name, data, false, max(0.0, distance), nothing, _index, 0.0, 0.0, 0, 0)
 end
 
 
@@ -92,7 +96,7 @@ function set_visited!(node::MarkedNode)
   node
 end
 
-function reset_visit!(node :: MarkedNode)
+function reset_visit!(node::MarkedNode)
   node.visited = false
   node  
 end
@@ -102,9 +106,32 @@ function set_distance!(node::MarkedNode, d::Float64)
   node
 end
 
+parent(node:: MarkedNode) = node.parent
 function set_parent!(node::MarkedNode{T}, p::MarkedNode{T}) where T
   node.parent = p
   node
 end
 
-parent(node:: MarkedNode) = node.parent
+pi(node::MarkedNode{T}) where T = node.pi
+function set_pi!(node::MarkedNode{T}, new_pi::Float64) where T 
+  node.pi = new_pi
+  node 
+end 
+
+best_pi(node::MarkedNode{T}) where T = node.best_pi
+function set_best_pi!(node::MarkedNode{T}, new_best_pi::Float64) where T 
+  node.best_pi = new_best_pi
+  node 
+end 
+
+v(node::MarkedNode) = node.v
+function set_v!(node::MarkedNode, v::Int) 
+  node.v = v
+  node 
+end 
+
+last_v(node::MarkedNode) = node.last_v
+function set_last_v!(node::MarkedNode, lv::Int) 
+  node.last_v = lv
+  node 
+end 

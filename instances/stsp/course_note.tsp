@@ -1,4 +1,4 @@
-NAME: swiss42
+NAME: cours_note
 TYPE: TSP
 COMMENT: Exemple de cours
 DIMENSION: 9

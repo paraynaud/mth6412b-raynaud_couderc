@@ -33,4 +33,5 @@ function priority!(p::PriorityItem, priority::Float64)
 end
 
 
+show(p::PriorityItem) = begin print("priorité: ", priority(p), " ") ; show(data(p)) end 
 
