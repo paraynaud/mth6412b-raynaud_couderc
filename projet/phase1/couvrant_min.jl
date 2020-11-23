@@ -116,10 +116,13 @@ end
 Implémentation de l'arlgorithme de Prim, si la source n'est pas définie l'algorithme en attribue une.
 Renvoie un vecteur des 
 """
-function prim(g :: GraphList{T}; source=first(adj_list(g))[1]) where T 
-  #Initialiisation
-  set_distance!(source, 0.0)
+function prim(g :: GraphList{T}) where T 
+  #Initialisation
   _nodes = nodes(g)
+  # idx_source = findfirst(x -> index(x) == 1, _nodes)
+  # source = _nodes[idx_source]
+  source = first(adj_list(g))[1]
+  set_distance!(source, 0.0)
   queue = create_marked_node_queue(_nodes, source)
   arbre_couvrant = Vector{eltype(_nodes)}([])
 
@@ -142,11 +145,12 @@ function prim(g :: GraphList{T}; source=first(adj_list(g))[1]) where T
         priority_voisin = priority(priority_item_voisin)
         if priority_voisin >= poids # mise à jour du noeud si celui ci n'appartient pas encore à l'arbre couvrant        
           set_parent!(voisin, node_min)
-          update!(queue, voisin, poids) #mise à jour dans la file de priorité
+          update!(queue, voisin, poids, node_min) #mise à jour dans la file de priorité
         end 
       end 
     end  
   end
+  reset_visit(g)
   arbre_couvrant
 end 
 
@@ -171,26 +175,45 @@ end
 
 
 function minimum_1_tree(graph :: GraphList{T}) where T
-  _graph = copy(graph)
-  (lone_node, graph_tmp) = graph_minus_one_vertex(_graph)
+  # _graph = deepcopy(graph)
+  (lone_node, graph_tmp) = graph_minus_one_vertex(graph)
   _res_nodes = prim(graph_tmp)
   new_adj_list = create_edges(_res_nodes)
 
-  _sorted_edges_lone_node = sort(adj_list(_graph)[lone_node])
+  _sorted_edges_lone_node = sort(adj_list(graph)[lone_node])
   _edge_sup_1 = _sorted_edges_lone_node[1]
   _edge_sup_2 = _sorted_edges_lone_node[2]
 
   get!(new_adj_list, lone_node, Vector{Couple{MarkedNode{T},Float64}}(undef,0))   
   push!(new_adj_list[lone_node], _edge_sup_1)
-  push!(new_adj_list[lone_node], _edge_sup_2)
+
+
+  sommet_u = fst(_edge_sup_1)
+  sommet_v = fst(_edge_sup_2)
+  set_v!(sommet_v, v(sommet_v)+1)
+  set_v!(sommet_U, v(sommet_u)+1)
+
+  # push!(new_adj_list[lone_node], _edge_sup_2)
+  set_v!(lone_node, 0)
+  set_distance!(lone_node, 0.0)
+  set_distance!(fst(_edge_sup_1), snd(_edge_sup_1))
+  # set_distance!(fst(_edge_sup_2), snd(_edge_sup_2)) 
+  idx_last_source = findfirst(x -> parent(fst(x)) == nothing, adj_list(graph)[lone_node])
+  couple_source = adj_list(graph)[lone_node][idx_last_source]
+  push!(new_adj_list[lone_node], couple_source)
+  set_distance!(fst(couple_source), snd(couple_source))
 
   one_tree = GraphList{T}("1-tree", new_adj_list)
+  for node in nodes(one_tree)
+     @show node.distance
+  end
   return one_tree
 end 
   
 function create_edges(_res_nodes :: Vector{MarkedNode{T}}) where T 
   new_adj_list = Dict{ MarkedNode{T}, Vector{ Couple{MarkedNode{T},Float64} } }()
   for node in _res_nodes
+    set_v!(node, -2)
     get!(new_adj_list, node, Vector{Couple{MarkedNode{T},Float64}}(undef,0))   
   end 
   for node in _res_nodes		
@@ -199,7 +222,9 @@ function create_edges(_res_nodes :: Vector{MarkedNode{T}}) where T
       _node2 = node 
       _weight = distance(node)
       push!(new_adj_list[_node1], Couple(_node2, _weight)) 
+      set_v!(_node1, v(_node1)+1)
       push!(new_adj_list[_node2], Couple(_node1, _weight)) 
+      set_v!(_node2, v(_node2)+1)
     end 
   end 
   return new_adj_list

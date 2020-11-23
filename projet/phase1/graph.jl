@@ -23,9 +23,6 @@ abstract type AbstractGraph{T} end
 """Renvoie le nombre d'arêtes du graphe."""
 @inline nb_edges(graph::AbstractGraph) = length( edges(graph) )
 
-""" définition de l'égalité entre graph""" 
-@inline (==)(graph1::AbstractGraph, graph2::AbstractGraph) = (nodes(graph1) == nodes(graph2)) && (edges(graph1) == edges(graph2)) && (name(graph1) == name(graph2))
-
 """ Renvoie le poids total des arêtes d'un graphe. Utilisé principalement pour recupérer les coût d'un arbre couvrant."""
 total_weigth_edges(graph::AbstractGraph) = mapreduce( pair -> weight(pair[2]), +,collect(edges(graph)))
 
@@ -56,6 +53,8 @@ function GraphDic(name::String, nodes::Vector{Node{T}}, edges::Vector{Edge{T}}) 
   GraphDic{T}(name, nodes, dic_edges)
 end 
 
+""" définition de l'égalité entre graph""" 
+@inline (==)(graph1::GraphDic, graph2::GraphDic) = (nodes(graph1) == nodes(graph2)) && (edges(graph1) == edges(graph2)) && (name(graph1) == name(graph2))
 
 """Ajoute un noeud au graphe."""
 function add_node!(graph::GraphDic{T}, node::Node{T}) where T
@@ -121,6 +120,10 @@ mutable struct GraphList{T} <: AbstractGraph{T}
   adj_list :: Dict{ MarkedNode{T}, Vector{ Couple{MarkedNode{T},Float64} } }
 end
 
+""" définition de l'égalité entre graph""" 
+@inline (==)(graph1::GraphList, graph2::GraphList) = (nodes(graph1) == nodes(graph2)) && (adj_list(graph1) == adj_list(graph2)) && (name(graph1) == name(graph2))
+
+
 adj_list(g :: GraphList{T}) where T = g.adj_list
 """ renvoies les noeuds d'un graphe stocké sous forme de liste d'adjacence"""
 nodes(g :: GraphList{T}) where T = collect(keys(adj_list(g))) :: Vector{MarkedNode{T}}
@@ -177,7 +180,13 @@ function graph_minus_one_vertex(graph :: GraphList{T}) where T
   end 
   new_graph = GraphList(name(_graph)*" without first node", new_adj_list)
   return (lone_node, new_graph)
-end 
+end
+
+function reset_visit(graph :: GraphList{T}) where T
+  for node in nodes(graph)
+    node.visited = false
+  end
+end
 
 function show(g :: GraphList{T}) where T
   keys_node = collect(keys(adj_list(g)))

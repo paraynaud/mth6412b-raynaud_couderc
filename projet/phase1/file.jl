@@ -73,11 +73,11 @@ function index(queue :: Queue{PriorityItem{MarkedNode{T}}}, node :: MarkedNode{T
 end 
 
 """ Met à jour la file de priorité queue, vérifie si le noeud n'appartient pas à l'arbre couvrant avant de le mettre à jour """
-function update!(queue :: Queue{PriorityItem{MarkedNode{T}}}, node :: MarkedNode{T}, new_priority :: Float64) where T
+function update!(queue :: Queue{PriorityItem{MarkedNode{T}}}, node :: MarkedNode{T}, new_priority :: Float64, node_min :: MarkedNode{T}) where T
     if visited(node) == false 
         _index = index(queue, node )    
         _items = items(queue)
-        _items[_index] = PriorityItem(new_priority, node)   
+        _items[_index] = PriorityItem(new_priority + pi(node) + pi(node_min), node)   
         sort!(_items)
     end 
     queue

@@ -85,7 +85,7 @@ function reset_index_marked_node()
 end 
 
 """Constructeur de MarkedNode """
-function MarkedNode(data::T; name::String="", distance::Float64=Inf, _index::Int=_index_marked_node, pi::Float64=0.0, best_pi::Float64=0.0, v::Int=-1, last_v::Int=-1, beta::Float64=Inf) where T
+function MarkedNode(data::T; name::String="", distance::Float64=Inf, _index::Int=_index_marked_node, pi::Float64=0.0, best_pi::Float64=0.0, v::Int= 0 , last_v::Int=-1, beta::Float64=Inf) where T
   global _index_marked_node +=1
   MarkedNode(name, data, false, max(0.0, distance), nothing, _index, pi, best_pi, v, last_v, beta)
 end
