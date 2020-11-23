@@ -15,7 +15,7 @@ end
 
 function total_weight_nodes(vector_nodes)
     sum = 0
-    for node  in vector_nodes
+    for node in vector_nodes
         distance(node) == Inf && @warn("distance inf ", node)
         sum = sum + distance(node)
     end 
@@ -26,10 +26,12 @@ end
 function check_weight_graph(graph)
     list_adjacence = adj_list(graph)
     nodes_vector = nodes(graph)    
+    sum=0
     for node in nodes_vector
         for voisin in list_adjacence[node]
             distance(fst(voisin)) == Inf && @warn("distance inf ", voisin)
             snd(voisin) == Inf && @warn("distance inf ", voisin)
+            sum += snd(voisin)
         end             
     end 
     return sum
@@ -49,10 +51,15 @@ filename = "instances/stsp/bayg29.tsp"
 
 list_adjacence = create_graph_list_from_file(filename)
 (lone_node, graph_minus_1) = graph_minus_one_vertex(list_adjacence)
+res_minus_one = prim(graph_minus_1)
+res = prim(list_adjacence)
+@show total_weight_nodes(res)
 res_min_1_tree = minimum_1_tree(list_adjacence)
-show(res_min_1_tree)
+# show(res_min_1_tree)
 @show length(nodes(list_adjacence)), length(nodes(res_min_1_tree))
 
+
+@show  check_weight_graph(res_min_1_tree), total_weight_nodes(prim(graph_minus_1))
 
 
 

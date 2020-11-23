@@ -208,6 +208,13 @@ include(code_path*"ordered_include.jl")
 			@test total_weigth_edges(couvrant_bays29_kruskal) == 1557
 			@test total_weight(couvrant_bays29_prim) == 1557
 			
+
+			bayg29 = "instances/stsp/bayg29.tsp"
+			couvrant_bayg29_kruskal = main_kruskal2(bayg29)
+			couvrant_bayg29_prim = main_prim(bayg29)
+			@test total_weigth_edges(couvrant_bayg29_kruskal) == 1319
+			@test total_weight(couvrant_bayg29_prim) == 1319
+
 			swiss42 = "instances/stsp/swiss42.tsp"
 			couvrant_swiss42_kruskal = main_kruskal2(swiss42)
 			couvrant_swiss42_prim = main_prim(swiss42)

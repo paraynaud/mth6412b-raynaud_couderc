@@ -361,6 +361,7 @@ function create_graph_list_from_file(filename::String)
       key1 = nodes_vector[findfirst(x -> data(x) == data(node1), nodes_vector) ]
       key2 = nodes_vector[findfirst(x -> data(x) == data(node2), nodes_vector) ]
     end
+    
     if (edge_weight_format == "LOWER_DIAG_ROW") || (edge_weight_format == "UPPER_ROW")
       push!(dic[key1], Couple(key2, weight)) 
       push!(dic[key2], Couple(key1, weight)) 
