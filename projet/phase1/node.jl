@@ -51,7 +51,7 @@ set_index!(node :: Node{T}, i :: Int) where T = node.index = i
 @inline distance(node :: AbstractNode{T}) where T = node.distance 
 
 """Affiche un noeud."""
-show(node::AbstractNode) = println("Node ", name(node), ", data: ", data(node), " d'indice ", index(node))
+show(node::AbstractNode) = println("Node ", name(node), ", data: ", data(node), " d'indice ", index(node), " distance: ", distance(node))
 
 """Type représentant les noeuds d'un graphe.
 
@@ -73,7 +73,7 @@ mutable struct MarkedNode{T} <: AbstractNode{T}
   best_pi :: Float64
   v :: Int
   last_v :: Int
-  beta :: Float64
+  beta :: Float64  
 end
 
 """ Utilisation d'une variable globale lors de la création du graphe pour nous simplifier la distinction entre 2 noeud étant initialisé sans donnée"""
@@ -110,6 +110,11 @@ end
 parent(node:: MarkedNode) = node.parent
 function set_parent!(node::MarkedNode{T}, p::MarkedNode{T}) where T
   node.parent = p
+  node
+end
+
+function set_parent_nothing!(node::MarkedNode{T}) where T
+  node.parent = nothing
   node
 end
 

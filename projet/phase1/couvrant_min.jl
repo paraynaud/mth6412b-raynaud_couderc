@@ -116,21 +116,28 @@ end
 Implémentation de l'arlgorithme de Prim, si la source n'est pas définie l'algorithme en attribue une.
 Renvoie un vecteur des 
 """
-function prim(g :: GraphList{T}) where T 
+function prim(g :: GraphList{T}; source = first(adj_list(g))[1]) where T 
   #Initialisation
   _nodes = nodes(g)
   # idx_source = findfirst(x -> index(x) == 1, _nodes)
-  # source = _nodes[idx_source]
-  source = first(adj_list(g))[1]
-  set_distance!(source, 0.0)
+  # source = _nodes[idx_source]  
+  
   queue = create_marked_node_queue(_nodes, source)
   arbre_couvrant = Vector{eltype(_nodes)}([])
+  _liste_adjacence = adj_list(g)
 
   while is_empty(queue) == false
     node_min = data(min_weight(queue)) # on récupère l'élément de coût minimal de la file de priorité
     priority_item_node_min = get_priority_item(queue, node_min)
     priority_node_min = priority(priority_item_node_min)
-    set_distance!(node_min, priority_node_min)
+
+    if node_min == source 
+      set_distance!(node_min, 0.0)
+    else 
+      _idx_predecesseur = findfirst((couple -> fst(couple)==parent(node_min)), _liste_adjacence[node_min])
+      _distance = snd(_liste_adjacence[node_min][_idx_predecesseur])
+      set_distance!(node_min, _distance)
+    end 
     push!(arbre_couvrant, node_min) # On ajoute cette élément dans la liste des sommets formant l'arbre couvrant
     delete_item(queue, node_min) # suppression du noeud minimum dans la file de priorité
     set_visited!(node_min) # set l'attribut visited de node_min à true
@@ -175,55 +182,76 @@ end
 
 
 function minimum_1_tree(graph :: GraphList{T}) where T
-  # _graph = deepcopy(graph)
+  
   (lone_node, graph_tmp) = graph_minus_one_vertex(graph)
-  _res_nodes = prim(graph_tmp)
-  new_adj_list = create_edges(_res_nodes)
+  
+  _nodes_tmp = nodes(graph_tmp)  
 
   _sorted_edges_lone_node = sort(adj_list(graph)[lone_node])
-  _edge_sup_1 = _sorted_edges_lone_node[1]
-  _edge_sup_2 = _sorted_edges_lone_node[2]
+  _source = fst(_sorted_edges_lone_node[1])
+  
+  
+  _res_nodes = prim(graph_tmp; source=_source)
+
+  
+  (lone_node in parent.(_res_nodes)) && println("pas bon quand meme")
+  new_adj_list = create_edges(_res_nodes, graph)
 
   get!(new_adj_list, lone_node, Vector{Couple{MarkedNode{T},Float64}}(undef,0))   
-  push!(new_adj_list[lone_node], _edge_sup_1)
 
+  
+  if _sorted_edges_lone_node[1] == _source 
+    _sommet_v = fst(_sorted_edges_lone_node[2])
+  else 
+    _sommet_v = fst(_sorted_edges_lone_node[1])
+  end 
 
-  sommet_u = fst(_edge_sup_1)
-  sommet_v = fst(_edge_sup_2)
-  set_v!(sommet_v, v(sommet_v)+1)
-  set_v!(sommet_U, v(sommet_u)+1)
-
-  # push!(new_adj_list[lone_node], _edge_sup_2)
+  
+  set_v!(_source, v(_source)+1)
+  set_v!(_sommet_v, v(_sommet_v)+1)
   set_v!(lone_node, 0)
-  set_distance!(lone_node, 0.0)
-  set_distance!(fst(_edge_sup_1), snd(_edge_sup_1))
-  # set_distance!(fst(_edge_sup_2), snd(_edge_sup_2)) 
-  idx_last_source = findfirst(x -> parent(fst(x)) == nothing, adj_list(graph)[lone_node])
-  couple_source = adj_list(graph)[lone_node][idx_last_source]
-  push!(new_adj_list[lone_node], couple_source)
-  set_distance!(fst(couple_source), snd(couple_source))
+
+  _idx_source = findfirst(couple -> fst(couple) == _source, adj_list(graph)[lone_node]) 
+  _distance_source = snd(adj_list(graph)[lone_node][_idx_source])  
+
+  _idx_sommet_v = findfirst(couple -> fst(couple) == _sommet_v, adj_list(graph)[lone_node]) 
+  _distance_sommet_v = snd(adj_list(graph)[lone_node][_idx_sommet_v])
+      
+  push!(new_adj_list[lone_node], Couple(_sommet_v, _distance_sommet_v))
+  push!(new_adj_list[lone_node], Couple(_source, _distance_source))
+
+  push!(new_adj_list[_sommet_v], Couple(lone_node, _distance_sommet_v))
+  push!(new_adj_list[_source], Couple(lone_node, _distance_source))
+
 
   one_tree = GraphList{T}("1-tree", new_adj_list)
-  for node in nodes(one_tree)
-     @show node.distance
-  end
-  return one_tree
+  return lone_node, one_tree
 end 
   
-function create_edges(_res_nodes :: Vector{MarkedNode{T}}) where T 
+
+
+function create_edges(_res_nodes :: Vector{MarkedNode{T}}, g) where T 
   new_adj_list = Dict{ MarkedNode{T}, Vector{ Couple{MarkedNode{T},Float64} } }()
+  
   for node in _res_nodes
     set_v!(node, -2)
     get!(new_adj_list, node, Vector{Couple{MarkedNode{T},Float64}}(undef,0))   
   end 
+
+  length( filter(node -> parent(node) == nothing, _res_nodes)) > 1 && error("plus d'une source")
+
   for node in _res_nodes		
     if parent(node) != nothing
       _node1 = parent(node)
       _node2 = node 
-      _weight = distance(node)
-      push!(new_adj_list[_node1], Couple(_node2, _weight)) 
+
+
+      idx_node2 = findfirst(couple -> fst(couple) == _node2, adj_list(g)[_node1])
+      _weight_edge = snd(adj_list(g)[_node1][idx_node2])
+            
+      push!(new_adj_list[_node1], Couple(_node2, _weight_edge)) 
       set_v!(_node1, v(_node1)+1)
-      push!(new_adj_list[_node2], Couple(_node1, _weight)) 
+      push!(new_adj_list[_node2], Couple(_node1, _weight_edge)) 
       set_v!(_node2, v(_node2)+1)
     end 
   end 

@@ -134,14 +134,6 @@ copy(g:: GraphList{T}) where T = GraphList(name(g), copy(adj_list(g)))
 renvoie la liste des voisins de node.
 """
 function neighbours(g :: GraphList{T}, node :: MarkedNode{T}) where T
-  # key_node = node
-  # for i in keys(adj_list(g))
-  #   if i==node
-  #     key_node = i
-  #     continue
-  #   end 
-  # end 
-  # neighbours = adj_list(g)[key_node]
   neighbours = adj_list(g)[node]
   return neighbours
 end 
@@ -165,8 +157,8 @@ function dfs_visit_iter(G::GraphList{T}, node::MarkedNode{T}) where T
     return res_nodes 
 end
 
-function graph_minus_one_vertex(graph :: GraphList{T}) where T
-  _graph = copy(graph)
+function graph_minus_one_vertex(_graph :: GraphList{T}) where T
+  # _graph = copy(graph)
   nodes_vector = nodes(_graph) 
   adjacency_list = adj_list(_graph)
   nodes_minus_one = nodes_vector[2:end]
@@ -194,8 +186,9 @@ function show(g :: GraphList{T}) where T
     print("degrès: ", length(adj_list(g)[node]), " ")
     show(node)    
     for voisin in adj_list(g)[node]        
-    print("### ")
+    print("### poids arête \t", snd(voisin), " \t")
     show(fst(voisin) )    
+
     end 
   end 
 end 

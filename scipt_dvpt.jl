@@ -28,10 +28,13 @@ function check_weight_graph(graph)
     nodes_vector = nodes(graph)    
     sum=0
     for node in nodes_vector
-        for voisin in list_adjacence[node]
-            sum += snd(voisin)
-        end             
-    end 
+        tmp = 0
+        for voisin in list_adjacence[node]    
+			tmp += snd(voisin) 
+		end
+		tmp = tmp/2  		
+		sum += tmp    
+	end 
     return sum
 end 
 
@@ -45,13 +48,24 @@ end
 
 # graph = create_graph_dic_from_file(filename)
 
-
-
 list_adjacence = create_graph_list_from_file(filename)
-res = ascent(list_adjacence)
-@show total_weight_nodes(nodes(res))
+
+# graph_couvrant = prim(list_adjacence)
+# total =  total_weight2(list_adjacence, graph_couvrant)
 
 
+
+# for _ in 1:100 
+
+main_khl(filename)
+
+
+    # diviser_t = 2.0 #défaut à 2
+    # diviser_period = 2.0 #défaut à 2
+    # res = ascent(list_adjacence; _diviser_t=diviser_t, _diviser_period=diviser_period)
+    # @show check_weight_graph(res)
+
+# end 
 
 
 
