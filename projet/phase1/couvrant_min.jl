@@ -93,21 +93,6 @@ return graph
 
 end 
 
-# function create_marked_node_list(root :: Node, edges_vector)
-#   index_node_vector = [1:length(edges_vector)...] #Initialiisation
-#   markednode_result_vector = []
-#   push!(markednode_result_vector, MarkedNode(root.data; name="root"))
-#   for i in index_node_vector
-#     edge = edges_vector[i]
-#     if node()
-#     end 
-#   end 
-#   cpt = 1 
-#   for edge in edges_vector
-#     index = index_node_vector[cpt]
-#     cpt = cpt + 1
-#   end 
-# end 
 
 
 
@@ -162,6 +147,10 @@ function prim(g :: GraphList{T}; source = first(adj_list(g))[1]) where T
 end 
 
 
+"""
+    build_graph_list(vector_node)
+construit un graphe de liste d'adjacence à partir d'une liste de noeuds, le poids sur les arêtes sont nuls.
+"""
 function build_graph_list(arbre_crouvrant :: Vector{MarkedNode{T}}) where T
   edges = Dict{ MarkedNode{T}, Vector{ Couple{MarkedNode{T},Float64} } }()
   for node in arbre_crouvrant
@@ -180,15 +169,19 @@ function build_graph_list(arbre_crouvrant :: Vector{MarkedNode{T}}) where T
 end 
 
 
-
+""" 
+    minimum_1_tree(g)
+minimum(g) construit un 1-tree minimum à partir du graphe g
+"""
 function minimum_1_tree(graph :: GraphList{T}) where T
   
   (lone_node, graph_tmp) = graph_minus_one_vertex(graph)
   
   _nodes_tmp = nodes(graph_tmp)  
 
-  _sorted_edges_lone_node = sort(adj_list(graph)[lone_node])
-  _source = fst(_sorted_edges_lone_node[1])
+  edges_lone_node = adj_list(graph)[lone_node]
+  _source = fst(edges_lone_node[1])
+  
   
   
   _res_nodes = prim(graph_tmp; source=_source)
@@ -200,10 +193,10 @@ function minimum_1_tree(graph :: GraphList{T}) where T
   get!(new_adj_list, lone_node, Vector{Couple{MarkedNode{T},Float64}}(undef,0))   
 
   
-  if _sorted_edges_lone_node[1] == _source 
-    _sommet_v = fst(_sorted_edges_lone_node[2])
+  if edges_lone_node[1] == _source 
+    _sommet_v = fst(edges_lone_node[2])
   else 
-    _sommet_v = fst(_sorted_edges_lone_node[1])
+    _sommet_v = fst(edges_lone_node[1])
   end 
 
   
@@ -229,7 +222,10 @@ function minimum_1_tree(graph :: GraphList{T}) where T
 end 
   
 
-
+"""
+    create_edges(res_vector, g)
+construit à partir d'un vecteur de noeud un graphe au format des listes d'adjacence.
+"""
 function create_edges(_res_nodes :: Vector{MarkedNode{T}}, g) where T 
   new_adj_list = Dict{ MarkedNode{T}, Vector{ Couple{MarkedNode{T},Float64} } }()
   

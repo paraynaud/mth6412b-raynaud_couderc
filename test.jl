@@ -316,3 +316,31 @@ include(code_path*"ordered_include.jl")
 	# @test check_pas_de_doublon(res_pa561)
 	
 end
+
+
+
+@testset " test ascent" begin 
+
+	
+	function check_weight_graph(graph)
+		list_adjacence = adj_list(graph)
+		nodes_vector = nodes(graph)    
+		sum=0
+		for node in nodes_vector
+			tmp = 0
+			for voisin in list_adjacence[node]    
+				tmp += snd(voisin) 
+			end
+			tmp = tmp/2  		
+			sum += tmp    
+		end 
+		return sum
+	end
+
+	filename = "instances/stsp/course_note.tsp"
+
+	lone_node,res = ascent(filename)
+	@test check_weight_graph(res) <= 61
+
+
+end 

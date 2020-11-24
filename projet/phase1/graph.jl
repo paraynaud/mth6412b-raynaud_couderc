@@ -157,6 +157,12 @@ function dfs_visit_iter(G::GraphList{T}, node::MarkedNode{T}) where T
     return res_nodes 
 end
 
+
+""" 
+    graph_minus_one_vertex(g)
+Construit un graph en lui enlevant un sommet quelconque. Renvoie le graphe induit ainsi que le sommet.
+Particulièrement utile pour la construction de 1-arbre
+"""
 function graph_minus_one_vertex(_graph :: GraphList{T}) where T
   # _graph = copy(graph)
   nodes_vector = nodes(_graph) 
@@ -174,6 +180,10 @@ function graph_minus_one_vertex(_graph :: GraphList{T}) where T
   return (lone_node, new_graph)
 end
 
+"""
+    reset_visit(g)
+Set à false les champs de tous noeuds du graphe g
+"""
 function reset_visit(graph :: GraphList{T}) where T
   for node in nodes(graph)
     node.visited = false

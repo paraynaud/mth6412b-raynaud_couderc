@@ -57,13 +57,14 @@ list_adjacence = create_graph_list_from_file(filename)
 
 # for _ in 1:100 
 
-main_khl(filename)
+# main_khl(filename)
 
 
-    # diviser_t = 2.0 #défaut à 2
-    # diviser_period = 2.0 #défaut à 2
-    # res = ascent(list_adjacence; _diviser_t=diviser_t, _diviser_period=diviser_period)
-    # @show check_weight_graph(res)
+    diviser_t = 2.0 #défaut à 2
+    diviser_period = 2.0 #défaut à 2
+    lone_node,res = ascent(list_adjacence; _diviser_t=diviser_t, _diviser_period=diviser_period)
+    show(res)
+    @show check_weight_graph(res)
 
 # end 
 

@@ -1,3 +1,7 @@
+""" 
+		check_weight_graph(g)
+Permet de calculer le coût d'un graphe en sommant le poid de ses arêtes.
+"""
 function check_weight_graph(graph)
 	list_adjacence = adj_list(graph)
 	nodes_vector = nodes(graph)    
@@ -14,7 +18,7 @@ end
 end 
 
 
-
+#non fini
 function main_khl(filename)
 	graph = create_graph_list_from_file(filename)
 	diviser_t = 2.0 #défaut à 2
@@ -26,7 +30,7 @@ function main_khl(filename)
 
 end 
 
-
+#non fini
 function create_candidate_set(graph; kwargs...) 
 	
 	lone_node, m1t = ascent(graph; kwargs...)
@@ -45,9 +49,13 @@ function create_candidate_set(graph; kwargs...)
 	new_graph = generate_candidates(max_candidates, max_alpha, graph, m1t, lone_node)
 	return new_graph
 end 
-# function generate_candidates(max_candidates :: Float64, max_alpha:: Float64, graph :: GraphList{T}, m1t, lone_node :: MarkedNode{T}) where T
 
 
+
+""" 
+		norm(nodes)
+Calcule la norme des noeuds (i.e leurs écart par rapport à un degrès 2)
+"""
 function norm(nodes)
 	sum = 0 
 	for node in nodes
@@ -56,6 +64,12 @@ function norm(nodes)
 	return sum
 end
 
+
+
+""" 
+		tree_cost(g)
+Calcule le coût d'un arbre en prenant en compte les pi de chaque noeuds
+"""
 function tree_cost(graph)
     list_adjacence = adj_list(graph)
     nodes_vector = nodes(graph)    
@@ -75,7 +89,13 @@ function tree_cost(graph)
     return sum
 end 
 
-function ascent(graph :: GraphList{T}; _diviser_t::Float64=2, _diviser_period::Float64=2) where T
+
+"""
+		ascent(filename)
+réalise l'opération ascent à partir du graphe définit dans le fichier filename.
+"""
+ascent(filename :: String) = ascent(create_graph_list_from_file(filename))
+function ascent(graph :: GraphList{T}; _diviser_t::Float64=2.0, _diviser_period::Float64=2.0) where T
 	dimension = length(nodes(graph))
 	_nodes = nodes(graph)
 	# MarkedNode node	
@@ -142,7 +162,11 @@ end
 
 
 
-
+""" 
+		generate_order(m1t, lone_node)
+Génère l'ordre d'éavluation correct de manière à ce que les beta soient nécessaire pour calculer celui du noeud courant soit toujours disponible
+Créé à parti d'un 1-arbre et de son sommet 1
+"""
 function generate_order(m1t, lone_node)
 	_adj_list_m1t = adj_list(m1t)
 	order = [] 
@@ -174,7 +198,10 @@ end
 
 
 
-
+""" 
+		generate_candidates(max_candidate, max_alpha, g, m1t, lone_node)
+Non fonctionnelle, construit les alphas de manière à obtenir un sous-graphe pertionent pour la prochain itération.
+"""
 function generate_candidates(max_candidates :: Float64, max_alpha:: Float64, graph :: GraphList{T}, m1t, lone_node :: MarkedNode{T}) where T
 
 	_adj_list_graph = adj_list(graph)
