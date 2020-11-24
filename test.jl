@@ -286,21 +286,25 @@ include(code_path*"ordered_include.jl")
 
 
     filename = "instances/stsp/bays29.tsp"
-	nodes_bays29, edges_bays29 = rsl(filename)	
-	# nodes_bays29_1, edges_bays29_1, nodes_bays29_2, edges_bays29_2
-	weight = total_weight(edges_bays29)
-	@test 2020 <= weight <= 2*2020
+	res_nodes1, res_edges1, res_nodes2, res_edges2 = rsl(filename)	
+	weight1 = total_weight(res_edges1)
+	weight2 = total_weight(res_edges2)
+	@test 2020 <= weight1 <= 2*2020
+	@test 2020 <= weight2 <= 2*2020
 
 	filename = "instances/stsp/bayg29.tsp"
-	nodes_bayg29, edges_bayg29 = rsl(filename)
-	weight = total_weight(edges_bayg29)
-	@test 1610 <= weight <= 2*1610
+	res_nodes1, res_edges1, res_nodes2, res_edges2 = rsl(filename)	
+	weight1 = total_weight(res_edges1)
+	weight2 = total_weight(res_edges2)
+	@test 1610 <= weight1 <= 2*1610
+	@test 1610 <= weight2 <= 2*1610
 
 	filename = "instances/stsp/pa561.tsp"
-	nodes_pa561, edges_pa561 = rsl(filename)
-	weight = total_weight(edges_pa561)
-	@test 2763 <= weight <= 2*2763
-	
+	res_nodes1, res_edges1, res_nodes2, res_edges2 = rsl(filename)	
+	weight1 = total_weight(res_edges1)
+	weight2 = total_weight(res_edges2)
+	@test 2763 <= weight1 <= 2*2763
+	@test 2763 <= weight2 <= 2*2763
 
     # @test length(res_bayg29) == 29
     # @test check_pas_de_doublon(res_bayg29)
