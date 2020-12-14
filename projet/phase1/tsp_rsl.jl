@@ -64,7 +64,7 @@ end
 		rsl(g) 
 Construit une tournée à partir du graphe g en utilisant l'algoithme rsl et en appliquant à la fin des moves 2-opt
 """
-function rsl(g :: GraphList{T}) where T
+function rsl(g :: GraphList{T}) where T	
 	source=first(adj_list(g))[1]
 	couvrant = prim(g; source=source)
 	graph_couvrant = build_graph_list(couvrant)

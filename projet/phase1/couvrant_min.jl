@@ -121,7 +121,6 @@ function prim(g :: GraphList{T}; source = first(adj_list(g))[1]) where T
   _nodes = nodes(g)
   # idx_source = findfirst(x -> index(x) == 1, _nodes)
   # source = _nodes[idx_source]  
-  
   queue = create_marked_node_queue(_nodes, source)
   arbre_couvrant = Vector{eltype(_nodes)}([])
   _liste_adjacence = adj_list(g)

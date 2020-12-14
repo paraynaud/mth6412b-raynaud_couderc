@@ -77,6 +77,8 @@ mutable struct MarkedNode{T} <: AbstractNode{T}
   successor::Union{MarkedNode{T},Nothing}
 end
 
+
+
 """ Utilisation d'une variable globale lors de la création du graphe pour nous simplifier la distinction entre 2 noeud étant initialisé sans donnée"""
 global _index_marked_node = 1
 
