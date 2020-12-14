@@ -312,3 +312,44 @@ include(code_path*"ordered_include.jl")
 	# @test check_pas_de_doublon(res_pa561)
 	
 end
+
+
+@testset "test minimum 1 tree" begin
+
+	filename = "instances/stsp/bays29.tsp"
+	nodes_bays29, edges_bays29 = rsl(filename)		
+
+
+end
+
+
+#fonctions testant l'ordre topologique fournit par prim.
+function check_parent(list_node, parent, index)
+	for (i,_node) in enumerate(list_node)
+	  if i > index 
+		return i,false 
+	  else 
+		if _node == parent
+		  return i,true
+		end 
+	  end 
+	end 
+  end 
+
+
+#fonctions testant l'ordre topologique fournit par prim.
+
+function topological_order_from_prim(graph :: GraphList{T}) where T
+_arbre_couvrant = prim(graph)
+for (i,_node) in enumerate(_arbre_couvrant)
+	if parent(_node) != nothing
+	index_parent,bool= check_parent(_arbre_couvrant, parent(_node), i) 
+	if index_parent == i || bool==false
+		error("on a pas un ordre topologique")
+	end
+	println("l'indice du parent du noeud: ", i, " est: ", index_parent)
+	else 
+	println("l'indice de la racine est ", i)
+	end 
+end 
+end

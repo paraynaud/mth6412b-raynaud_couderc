@@ -48,13 +48,6 @@ end
 # function generate_candidates(max_candidates :: Float64, max_alpha:: Float64, graph :: GraphList{T}, m1t, lone_node :: MarkedNode{T}) where T
 
 
-function norm(nodes)
-	sum = 0 
-	for node in nodes
-		sum += v(node)^2
-	end 
-	return sum
-end
 
 function tree_cost(graph)
     list_adjacence = adj_list(graph)

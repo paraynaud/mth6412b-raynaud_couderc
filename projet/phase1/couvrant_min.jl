@@ -257,3 +257,105 @@ function create_edges(_res_nodes :: Vector{MarkedNode{T}}, g) where T
   end 
   return new_adj_list
 end 
+
+
+
+
+function total_weight2(arbre_couvrant)
+  sum = 0
+  for i in arbre_couvrant
+    sum = sum + distance(i)
+  end 
+  return sum
+end
+
+
+function minimum_1_tree2(graph :: GraphList{T}; source = first(adj_list(graph))[1]) where T
+  
+  _nodes = nodes(graph)
+
+  # ATTENTION voir comment se comporte les successeurs, voir si il est pas nécessaire de les réinitilialiser
+  for _node in _nodes 
+    reset_successor!(_node)
+  end 
+  reset_parent!(source)
+  node_list = prim(graph; source=source) # node_list is a topological order
+
+  sum = 0
+  
+  map(node ->  set_v!(node, -2), node_list) #set v à 0 pour tous les noeuds  
+  map(node -> sum += pi(node), node_list) #on somme les pi
+  sum *= -2
+
+  for (i,node) in enumerate(node_list)
+    v_node = v(node)
+    set_v!(node,v_node+1)
+    if parent(node) != nothing 
+      v_parent = v(parent(node))
+      set_v!(parent(node),v_parent+1)
+      sum += pi(parent(node))
+    end 
+    sum += distance(node) + pi(node) 
+  end
+
+  source = node_list[1]
+  set_parent!(source, node_list[2])
+
+
+  index_leafs = findall(node -> v(node)==-1, node_list)
+  leafs = view(node_list, index_leafs)
+  _liste_adjacence = adj_list(graph)
+  n1, n1_next, distance_n1_n1_next = second_nearest_largest_among_leafs(leafs, _liste_adjacence) # on récupère la feuille dont le plus proche voisin n'appartenant pas à l'arbre couvrant est le plus loin parmi toutes les feuilles et le dit voisin.
+  
+  v_n1 = v(n1)
+  set_v!(n1,v_n1+1)
+  v_n1_next = v(n1_next)
+  set_v!(n1_next,v_n1_next+1)
+  sum += distance_n1_n1_next + pi(n1)  + pi(n1_next)
+  
+  set_successor!(n1,n1_next) # Le seul succeseur différent de nothing, distingue l'arête supplémentaire de l'arbre couvrant propre au 1-minimum_1_tree
+  println()
+  for node in node_list
+
+    println("v, pi, index: ", v(node), " ", pi(node), " ", index(node) )
+  
+  end
+  return sum, node_list
+
+end 
+
+function nearest_neighbours_out_of_spanning_tree(leaf, _adj_list)
+  idx_nearest = 0 
+  distance_min = Inf
+  node_min = nothing
+  neighbours = _adj_list[leaf]
+  length(neighbours) < 2 && error("pas assez de voisin dans le graphe")
+  _leaf_parent = parent(leaf)
+
+  for (i,couple) in enumerate(neighbours)
+    if fst(couple) != _leaf_parent 
+      if snd(couple) < distance_min
+        idx_nearest = i 
+        distance_min = snd(couple)
+        node_min = fst(couple)
+      end
+    end       
+  end 
+  return distance_min, node_min
+end 
+
+function second_nearest_largest_among_leafs(leafs, _adj_list)
+  _idx=0
+  _distance_min_max = -Inf
+  _node_min = nothing 
+  for (i,leaf) in enumerate(leafs)
+    _distance_min_i, _node_min_i = nearest_neighbours_out_of_spanning_tree(leaf, _adj_list)
+    if _distance_min_i > _distance_min_max
+      _idx = i 
+      _node_min = _node_min_i
+      _distance_min_max = _distance_min_i 
+    end 
+    end
+    
+  leafs[_idx], _node_min, _distance_min_max
+end 

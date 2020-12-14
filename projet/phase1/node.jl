@@ -74,6 +74,7 @@ mutable struct MarkedNode{T} <: AbstractNode{T}
   v :: Int
   last_v :: Int
   beta :: Float64  
+  successor::Union{MarkedNode{T},Nothing}
 end
 
 """ Utilisation d'une variable globale lors de la création du graphe pour nous simplifier la distinction entre 2 noeud étant initialisé sans donnée"""
@@ -87,7 +88,7 @@ end
 """Constructeur de MarkedNode """
 function MarkedNode(data::T; name::String="", distance::Float64=Inf, _index::Int=_index_marked_node, pi::Float64=0.0, best_pi::Float64=0.0, v::Int= 0 , last_v::Int=-1, beta::Float64=Inf) where T
   global _index_marked_node +=1
-  MarkedNode(name, data, false, max(0.0, distance), nothing, _index, pi, best_pi, v, last_v, beta)
+  MarkedNode(name, data, false, max(0.0, distance), nothing, _index, pi, best_pi, v, last_v, beta, nothing)
 end
 
 
@@ -112,6 +113,16 @@ function set_parent!(node::MarkedNode{T}, p::MarkedNode{T}) where T
   node.parent = p
   node
 end
+reset_parent!(node:: MarkedNode) = (node.parent = nothing)
+
+successor(node::MarkedNode{T}) where T = node.successor
+function set_successor!(node::MarkedNode{T}, p::MarkedNode{T}) where T
+  node.successor = p 
+  node 
+end 
+
+reset_successor!(node::MarkedNode{T}) where T = (node.successor = nothing)
+
 
 function set_parent_nothing!(node::MarkedNode{T}) where T
   node.parent = nothing

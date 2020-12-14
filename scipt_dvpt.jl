@@ -50,21 +50,21 @@ end
 
 list_adjacence = create_graph_list_from_file(filename)
 
+
+
+# la = minimum_1_tree2(list_adjacence)
+
+w, m1t = ascent(list_adjacence)
+
+# g = GraphList("test", create_edges(m1t, list_adjacence))
+# show(g)
 # graph_couvrant = prim(list_adjacence)
 # total =  total_weight2(list_adjacence, graph_couvrant)
 
 
-
+# main_khl(filename)
 # for _ in 1:100 
-
-main_khl(filename)
-
-
-    # diviser_t = 2.0 #défaut à 2
-    # diviser_period = 2.0 #défaut à 2
-    # res = ascent(list_adjacence; _diviser_t=diviser_t, _diviser_period=diviser_period)
-    # @show check_weight_graph(res)
-
+#     main_khl(filename)
 # end 
 
 
