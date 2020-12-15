@@ -25,7 +25,7 @@ function ascent(graph :: GraphList{T}; _diviser_t::Float64=2.0, _diviser_period:
       
 	max_alpha = 5.0
 	max_candidates = 5.0
-    sub_graph = generate_candidates(max_candidates, max_alpha, graph, source, m1t)
+    # sub_graph = generate_candidates(max_candidates, max_alpha, graph, source, m1t)
 
 
     best_w = w
@@ -38,15 +38,15 @@ function ascent(graph :: GraphList{T}; _diviser_t::Float64=2.0, _diviser_period:
 	end 
 	
     initial_step_size = 1.0
-    precision = 100.0
+    precision = 1
     t = initial_step_size * precision
     
     cpt = 1
     # norm(nodes(m1t))/dimension > 0.01  
-	while (t>0.0 ) && (norm(_nodes) != 0) && (period > 0.0) && cpt < 20
+	while (t>0.0 ) && (norm(_nodes) != 0) && (period > 0.0) 
 		p ::Int = 1 
 		cpt2 = 1
-		while t > 0.0 && p <= period && norm(_nodes) != 0 && cpt2 < 20
+		while t > 0.0 && p <= period && norm(_nodes) != 0 
 			for node in m1t 
 				(v(node) != 0) && set_pi!(node, pi(node) + t/10 * (7*v(node) + 3*last_v(node)) )
 				set_last_v!(node, v(node))
@@ -54,7 +54,7 @@ function ascent(graph :: GraphList{T}; _diviser_t::Float64=2.0, _diviser_period:
             
             
              w, m1t = minimum_1_tree2(graph; source=source)
-             println(w)
+            #  println(w)
             # w, m1t = minimum_1_tree2(graph)
                      
             # g = GraphList("test", create_edges(m1t, adj_list(graph)))
@@ -85,23 +85,21 @@ function ascent(graph :: GraphList{T}; _diviser_t::Float64=2.0, _diviser_period:
 		cpt += 1
     end 
     
-    norm(_nodes) == 0 && println("la norme est nulle")
-    t <= 0 && println("t est nul", t, period)
-    period <= 0 && println("period est nul")
-
     for node in _nodes 
-        print(best_pi(node))
         set_pi!(node, best_pi(node))		
         set_best_pi!(node,0.0)
     end 
     
     w, m1t = minimum_1_tree2(graph; source=source)		
 
+    # for node in m1t
+    #     println("node, parent, successeur :", index(node), " ", index(parent(node)), " ", node.successor)
+    # end
 	return w, m1t
 end 
 
 
-function generate_candidates(max_candidates :: Float64, max_alpha:: Float64, graph :: GraphList{T}, source, m1t) where T
+function generate_candidates(max_candidates :: Float64, max_alpha:: Float64, graph :: GraphList{T},  m1t) where T
 
 	_adj_list_graph = adj_list(graph)
 	_nodes = nodes(graph)
@@ -179,3 +177,96 @@ function generate_candidates(max_candidates :: Float64, max_alpha:: Float64, gra
 	new_graph = GraphList("new graph", new_adj_list)
 	return new_graph
 end 
+
+
+function create_candidate_set(graph :: GraphList{T}, max_candidates :: Float64) where T
+    alpha, m1t = ascent(graph)
+    println(alpha)
+    _sub_graph = generate_candidates(max_candidates, 0.1*alpha, graph, m1t)
+    return _sub_graph
+end
+
+
+
+function opt_hk(g :: GraphList{T}, nodes :: Vector, edges ::Vector) where T         
+	improve = true
+	while improve
+		improve = false
+		for i in 1:length(nodes)-1
+			for j in i:length(nodes)-1
+				if j != i && j != i+1 && j!= i-1
+					node_1 = nodes[i]
+					node_2 = nodes[i+1]
+					node_3 = nodes[j]
+					node_4 = nodes[j+1]
+					voisins1 = neighbours(g, node_1)
+					voisins2 = neighbours(g, node_4)
+
+                    idx = findfirst(x -> fst(x) == node_2, voisins1)
+                    if idx == nothing
+                        continue
+                    end
+					weight1 = snd(voisins1[idx])
+
+                    idx = findfirst(x -> fst(x) == node_3, voisins2)
+                    if idx == nothing
+                        continue
+                    end
+					weight2 = snd(voisins2[idx])
+
+                    idx = findfirst(x -> fst(x) == node_3, voisins1)
+                    if idx == nothing
+                        continue
+                    end
+					weight3 = snd(voisins1[idx])
+
+                    idx = findfirst(x -> fst(x) == node_2, voisins2)
+                    if idx == nothing
+                        continue
+                    end
+					weight4 = snd(voisins2[idx])
+
+					if weight1 + weight2 > weight3 + weight4
+						edges[i] = Edge(node_1, node_3, weight3)
+						edges[j] = Edge(node_2, node_4, weight4)                        
+						reverse!(edges, i+1,  j -1)
+						reverse!(nodes, i+1,  j)                        
+                        improve = true
+                        # println("pass")
+					end
+				end
+			end 
+        end 
+	end
+	return nodes, edges
+end
+
+function generate_tour(g :: GraphList{T}) where T
+    nodes_ = nodes(g)
+    dict = adj_list(g)
+    res_edges = []
+    debut = first(dict)[1]
+    res_nodes = [debut]
+    cpt = 0
+    while cpt < length(nodes_)-1
+        voisins = neighbours(g, debut)
+        list = []
+        for voisin in voisins
+            idx = findfirst(x -> x == fst(voisin) , res_nodes)
+            if idx == nothing
+                push!(list, voisin)
+            end
+        end
+        pp_voisin = minimum(list)
+        idx_min  = findfirst(x -> (x == pp_voisin &&  fst(x) != debut) , list)
+        push!(res_edges, Edge(debut, fst(list[idx_min]), snd(pp_voisin)))
+        push!(res_nodes, debut)
+        debut = fst(list[idx_min])
+        cpt += 1
+    end
+    node1 = res_nodes[1]
+    node2 = debut
+    idx = findfirst(x-> fst(x) == node2, neighbours(g, node1))
+    push!(res_edges, Edge(node2 , node1 , snd(neighbours(g, node1)[idx])))
+    return res_nodes, res_edges
+end

@@ -21,7 +21,7 @@ abstract type AbstractEdge{T} end
 @inline node2(edge::AbstractEdge) = edge.node2
 
 """Affiche une arête."""
-@inline show(edge::AbstractEdge) = println("Arête de poids ", string(weight(edge)), ": ", name(node1(edge)), " <------> ", name(node2(edge)), )
+@inline show(edge::AbstractEdge) = println("Arête de poids ", string(weight(edge)), ": ", index(node1(edge)), " <------> ", index(node2(edge)), )
 
 """surchage de l'opérateur == dépendant uniquement du poids d'une arête"""
 @inline (==)(edge1 :: AbstractEdge, edge2 :: AbstractEdge) = weight(edge1) == weight(edge2)

@@ -363,10 +363,13 @@ function create_graph_list_from_file(filename::String)
     end
     
     if (edge_weight_format == "LOWER_DIAG_ROW") || (edge_weight_format == "UPPER_ROW")
-      push!(dic[key1], Couple(key2, weight)) 
-      push!(dic[key2], Couple(key1, weight)) 
+      
+        push!(dic[key1], Couple(key2, weight)) 
+        push!(dic[key2], Couple(key1, weight)) 
+  
     elseif  (edge_weight_format == "FULL_MATRIX") 
       push!(dic[key1], Couple(key2, weight)) 
+      
     else 
       error("TSP format not supported")
     end 
