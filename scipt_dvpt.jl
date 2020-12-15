@@ -38,11 +38,11 @@ end
 #     return sum
 # end 
 
-   filename = "instances/stsp/pa561.tsp"
+#    filename = "instances/stsp/pa561.tsp"
     #  filename = "instances/stsp/bays29.tsp"
 # filename = "instances/stsp/course_note.tsp"
 #    filename = "instances/stsp/dantzig42.tsp"
-#    filename = "instances/stsp/gr17.tsp"
+   filename = "instances/stsp/gr17.tsp"
 
 
 
@@ -63,7 +63,7 @@ println(total_weight(edges2))
 # for edge in res_edges
 #     show(edge)
 # end
-_sub_graph = create_candidate_set(list_adjacence, 4.0)
+_sub_graph = create_candidate_set(list_adjacence, 5.0)
 res_nodes, res_edges = generate_tour(list_adjacence)
  _nodes, _edges = opt_hk(_sub_graph, res_nodes, res_edges)
  println(total_weight(_edges))

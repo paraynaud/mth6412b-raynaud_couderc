@@ -143,6 +143,9 @@ function generate_candidates(max_candidates :: Float64, max_alpha:: Float64, gra
     
     for (i_from, node_from) in enumerate(m1t)
         for (i_to, node_to) in enumerate(m1t)
+            if i_to == i_from
+                continue 
+            end 
             _idx = findfirst( couple -> fst(couple) == node_to, _adj_list_graph[node_from])
             _dist = snd(_adj_list_graph[node_from][_idx])
             alpha[i_from,i_to] =  _dist - beta[i_from,i_to]
@@ -170,7 +173,16 @@ function generate_candidates(max_candidates :: Float64, max_alpha:: Float64, gra
         selected_nodes = m1t[final_indices]
         for node in selected_nodes
             _idx = findfirst( couple -> fst(couple) == node, _adj_list_graph[node_from])
-            push!(new_adj_list[node_from], _adj_list_graph[node_from][_idx]) 
+            if _idx != nothing 
+                push!(new_adj_list[node_from], _adj_list_graph[node_from][_idx]) 
+            end 
+            # @show _idx
+            # println("adj_list[node_from")
+            # show.(fst.(_adj_list_graph[node_from]))
+            # println("node")
+            # show(node)
+            # println("selected_node")
+            # show.(selected_nodes)
         end 
     end 
 

@@ -77,7 +77,56 @@ function reconstruct_picture_rsl(filename)
 end 
 
 
-reconstruct_picture_rsl(filename)
+# reconstruct_picture_rsl(filename)
 
 
 # reconstruct_picture( "tsp/tours/nikos-cat.tour", "images/shuffled/nikos-cat.png", "tmp/exp-nikos-cat.png"; view = true) 
+
+
+
+
+
+
+ """
+    reconstruct_picture(filename)
+reconstruit une image à partir du fichier tsp contenu dans filename.
+"""
+function reconstruct_picture_hk(filename)
+
+    graph= create_graph_list_from_file_app_tsp(filename)
+    _sub_graph = create_candidate_set(graph, 5.0)
+    res_nodes, res_edges = generate_tour(graph)
+    _nodes2, _edges2 = opt_hk(_sub_graph, res_nodes, res_edges)    
+    #création du graphe et applicaiton de rsl
+    
+    
+
+    #On trouve l'élément 0 dans le tour puis on réarrange le tableau _nodes2 autour de cet indice pour trouver _nodes
+    idx_0 = find_rotation_node(_nodes2)
+    _nodes = circshift(_nodes2, -idx_0+1)
+    
+    #création des noms des fichiers temporaires
+    name_file_without_tsp = split(filename, '.')[1]
+    name_file = split(name_file_without_tsp, '/')[end]
+    t = Dates.now()
+    st = Dates.format(t, "d-u-H-M")
+    tmp_file = "tmp/"*name_file*"-"*st*".tour"
+
+    # on construit le tour à partir de _nodes
+    # on calcul le coût par rapport aux arêtes
+    # On écrit le tour dans un fichier temporaire
+    _tour_order = map(node -> data(node), _nodes)
+    _cost = Float32(total_weight(_edges2))
+    write_tour(tmp_file, _tour_order, _cost)
+
+    #création d'un fichier tempoaire, puis création de l'image issue de rsl
+    tmp_output_file = "res/"*name_file*"-"*st*".png"  
+    shuffled_image = "images/shuffled/"*name_file*".png"  
+    bool_view = true
+    reconstruct_picture(tmp_file, shuffled_image, tmp_output_file; view=bool_view)
+
+
+end 
+
+
+reconstruct_picture_hk(filename)
