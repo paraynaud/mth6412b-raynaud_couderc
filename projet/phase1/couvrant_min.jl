@@ -293,9 +293,8 @@ function minimum_1_tree2(graph :: GraphList{T}; source = first(adj_list(graph))[
     if parent(node) != nothing 
       v_parent = v(parent(node))
       set_v!(parent(node),v_parent+1)
-      sum += pi(parent(node))
+      sum += distance(node) + pi(parent(node)) + pi(node)
     end 
-    sum += distance(node) + pi(node) 
   end
 
   source = node_list[1]
@@ -311,15 +310,14 @@ function minimum_1_tree2(graph :: GraphList{T}; source = first(adj_list(graph))[
   set_v!(n1,v_n1+1)
   v_n1_next = v(n1_next)
   set_v!(n1_next,v_n1_next+1)
-  sum += distance_n1_n1_next + pi(n1)  + pi(n1_next)
+  sum += distance_n1_n1_next + pi(n1) + pi(n1_next)
   
   set_successor!(n1,n1_next) # Le seul succeseur différent de nothing, distingue l'arête supplémentaire de l'arbre couvrant propre au 1-minimum_1_tree
-  println()
-  for node in node_list
+  # println()
+  # for node in node_list
+  #   println("v, pi, index: ", v(node), " ", pi(node), " ", index(node) )
+  # end
 
-    println("v, pi, index: ", v(node), " ", pi(node), " ", index(node) )
-  
-  end
   return sum, node_list
 
 end 

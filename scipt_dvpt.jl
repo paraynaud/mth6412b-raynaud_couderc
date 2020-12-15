@@ -13,48 +13,63 @@ function total_weight(edges)
 end 
 
 
-function total_weight_nodes(vector_nodes)
-    sum = 0
-    for node in vector_nodes
-        distance(node) == Inf && @warn("distance inf ", node)
-        sum = sum + distance(node)
-    end 
-    return sum
-end 
+# function total_weight_nodes(vector_nodes)
+#     sum = 0
+#     for node in vector_nodes
+#         distance(node) == Inf && @warn("distance inf ", node)
+#         sum = sum + distance(node)
+#     end 
+#     return sum
+# end 
 
 
-function check_weight_graph(graph)
-    list_adjacence = adj_list(graph)
-    nodes_vector = nodes(graph)    
-    sum=0
-    for node in nodes_vector
-        tmp = 0
-        for voisin in list_adjacence[node]    
-			tmp += snd(voisin) 
-		end
-		tmp = tmp/2  		
-		sum += tmp    
-	end 
-    return sum
-end 
+# function check_weight_graph(graph)
+#     list_adjacence = adj_list(graph)
+#     nodes_vector = nodes(graph)    
+#     sum=0
+#     for node in nodes_vector
+#         tmp = 0
+#         for voisin in list_adjacence[node]    
+# 			tmp += snd(voisin) 
+# 		end
+# 		tmp = tmp/2  		
+# 		sum += tmp    
+# 	end 
+#     return sum
+# end 
 
-# filename = "instances/stsp/pa561.tsp"
-# filename = "instances/stsp/bayg29.tsp"
- filename = "instances/stsp/course_note.tsp"
-# filename = "instances/stsp/dantzig42.tsp"
-# filename = "instances/stsp/gr17.tsp"
+   filename = "instances/stsp/pa561.tsp"
+    #  filename = "instances/stsp/bays29.tsp"
+# filename = "instances/stsp/course_note.tsp"
+#    filename = "instances/stsp/dantzig42.tsp"
+#    filename = "instances/stsp/gr17.tsp"
 
 
 
 # graph = create_graph_dic_from_file(filename)
 
 list_adjacence = create_graph_list_from_file(filename)
-
-
+nodes1, edges1, nodes2, edges2 = rsl(list_adjacence)
+println(total_weight(edges2))
 
 # la = minimum_1_tree2(list_adjacence)
 
-w, m1t = ascent(list_adjacence)
+# w, m1t = ascent(list_adjacence)
+# println(w)
+ 
+#  show(_sub_graph)
+ 
+#  println(total_weight(res_edges))
+# for edge in res_edges
+#     show(edge)
+# end
+_sub_graph = create_candidate_set(list_adjacence, 4.0)
+res_nodes, res_edges = generate_tour(list_adjacence)
+ _nodes, _edges = opt_hk(_sub_graph, res_nodes, res_edges)
+ println(total_weight(_edges))
+
+
+
 
 # g = GraphList("test", create_edges(m1t, list_adjacence))
 # show(g)

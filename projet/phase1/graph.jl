@@ -135,7 +135,13 @@ renvoie la liste des voisins de node.
 """
 function neighbours(g :: GraphList{T}, node :: MarkedNode{T}) where T
   neighbours = adj_list(g)[node]
-  return neighbours
+  res = []
+  for n in neighbours
+    if fst(n) != node
+      push!(res, n)
+    end
+  end
+  return res
 end 
 
 function dfs_visit_iter(G::GraphList{T}, node::MarkedNode{T}) where T
